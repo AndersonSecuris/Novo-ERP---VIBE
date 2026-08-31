@@ -1,0 +1,6 @@
+{
+  "name": "PDV & Assistência Técnica Pro",
+  "description": "Sistema completo de PDV com controle de estoque, vendas rápidas, cupom para impressora térmica, ordens de serviço para celulares com checklist, fotos e envio de mensagens via SQLite.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
