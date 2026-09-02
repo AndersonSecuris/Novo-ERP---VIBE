@@ -2,31 +2,72 @@ import initSqlJs, { Database } from 'sql.js';
 import fs from 'fs';
 import path from 'path';
 
-const DATA_DIR = path.join(process.cwd(), 'data');
-const DB_FILE = path.join(DATA_DIR, 'pdv_database.sqlite');
+export function getDataDir(): string {
+  if (process.env.USER_DATA_PATH) {
+    return path.join(process.env.USER_DATA_PATH, 'data');
+  }
+  return path.join(process.cwd(), 'data');
+}
+
+export function getDbFilePath(): string {
+  return path.join(getDataDir(), 'pdv_database.sqlite');
+}
 
 let db: Database;
 
 export async function initDatabase(): Promise<Database> {
   if (db) return db;
 
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
+  const dataDir = getDataDir();
+  const dbFile = getDbFilePath();
+
+  if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true });
   }
 
-  const SQL = await initSqlJs();
+  // Locate sql-wasm.wasm across various runtime scenarios (dev, dist, electron asar unpack)
+  const candidateWasmPaths = [
+    path.join(__dirname, 'sql-wasm.wasm'),
+    path.join(__dirname, '../dist/sql-wasm.wasm'),
+    path.join(process.cwd(), 'dist/sql-wasm.wasm'),
+    path.join(__dirname, '../node_modules/sql.js/dist/sql-wasm.wasm'),
+    path.join(process.cwd(), 'node_modules/sql.js/dist/sql-wasm.wasm'),
+  ];
 
-  if (fs.existsSync(DB_FILE)) {
+  let wasmBinary: Buffer | undefined;
+  for (const candidate of candidateWasmPaths) {
+    if (fs.existsSync(candidate)) {
+      try {
+        wasmBinary = fs.readFileSync(candidate);
+        break;
+      } catch {
+        // continue
+      }
+    }
+  }
+
+  const SQL = wasmBinary
+    ? await initSqlJs({ wasmBinary })
+    : await initSqlJs({
+        locateFile: (file) => {
+          for (const candidate of candidateWasmPaths) {
+            if (fs.existsSync(candidate)) return candidate;
+          }
+          return file;
+        }
+      });
+
+  if (fs.existsSync(dbFile)) {
     try {
-      const fileBuffer = fs.readFileSync(DB_FILE);
+      const fileBuffer = fs.readFileSync(dbFile);
       db = new SQL.Database(fileBuffer);
-      console.log('📦 Loaded existing SQLite database from:', DB_FILE);
+      console.log('📦 Loaded existing SQLite database from:', dbFile);
     } catch (err) {
       console.error('⚠️ Could not load existing DB, creating a new one:', err);
       db = new SQL.Database();
     }
   } else {
-    console.log('✨ Creating new SQLite database...');
+    console.log('✨ Creating new SQLite database at:', dbFile);
     db = new SQL.Database();
   }
 
@@ -618,7 +659,12 @@ export function saveDatabase(): void {
   try {
     const data = db.export();
     const buffer = Buffer.from(data);
-    fs.writeFileSync(DB_FILE, buffer);
+    const dbFile = getDbFilePath();
+    const dataDir = getDataDir();
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
+    fs.writeFileSync(dbFile, buffer);
   } catch (err) {
     console.error('Error saving SQLite database:', err);
   }
@@ -652,7 +698,7 @@ export function runQuery(sql: string, params: any[] = []): void {
 export function getDatabaseBuffer(): Buffer {
   if (!db) throw new Error('Database not initialized');
   saveDatabase();
-  return fs.readFileSync(DB_FILE);
+  return fs.readFileSync(getDbFilePath());
 }
 
 export function loadDatabaseFromBuffer(buffer: Buffer): void {

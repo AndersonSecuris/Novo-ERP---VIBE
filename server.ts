@@ -1,8 +1,8 @@
 import express from 'express';
 import path from 'path';
+import fs from 'fs';
 import cors from 'cors';
 import net from 'net';
-import { createServer as createViteServer } from 'vite';
 import {
   initDatabase,
   queryAll,
@@ -13,11 +13,11 @@ import {
   loadDatabaseFromBuffer
 } from './server/db.ts';
 
-async function startServer() {
+export async function startServer(customPort?: number) {
   await initDatabase();
 
   const app = express();
-  const PORT = 3000;
+  const PORT = customPort || (process.env.PORT ? parseInt(process.env.PORT, 10) : 3000);
 
   // Middlewares
   app.use(cors());
@@ -1003,25 +1003,62 @@ async function startServer() {
   });
 
   // --- Vite Middleware or Static Assets ---
+  // Resolve dist path across development, production, and Electron packaged app
+  let distPath = process.env.DIST_PATH || '';
+  if (!distPath) {
+    const candidates = [
+      path.join(__dirname),
+      path.join(__dirname, '../dist'),
+      path.join(process.cwd(), 'dist'),
+      path.join(process.cwd())
+    ];
+    for (const c of candidates) {
+      if (fs.existsSync(path.join(c, 'index.html'))) {
+        distPath = c;
+        break;
+      }
+    }
+    if (!distPath) distPath = path.join(process.cwd(), 'dist');
+  }
+
   if (process.env.NODE_ENV !== 'production') {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: 'spa',
-    });
-    app.use(vite.middlewares);
+    try {
+      const { createServer: createViteServer } = await import('vite');
+      const vite = await createViteServer({
+        server: { middlewareMode: true },
+        appType: 'spa',
+      });
+      app.use(vite.middlewares);
+    } catch (viteErr) {
+      console.warn('Vite dev middleware could not be loaded, using static files:', viteErr);
+      app.use(express.static(distPath));
+      app.get('*', (req, res) => {
+        res.sendFile(path.join(distPath, 'index.html'));
+      });
+    }
   } else {
-    const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
     app.get('*', (req, res) => {
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 PDV & Assistência Técnica Pro rodando em http://localhost:${PORT}`);
+  return new Promise<{ app: typeof app; server: any; port: number }>((resolve, reject) => {
+    const server = app.listen(PORT, '0.0.0.0', () => {
+      console.log(`🚀 PDV & Assistência Técnica Pro rodando em http://localhost:${PORT}`);
+      resolve({ app, server, port: PORT });
+    });
+    server.on('error', (err) => {
+      reject(err);
+    });
   });
 }
 
-startServer().catch(err => {
-  console.error('Failed to start server:', err);
-});
+// Auto-run if executed directly
+if (process.env.AUTO_START !== 'false') {
+  startServer().catch(err => {
+    console.error('Failed to start server:', err);
+  });
+}
+
+export default startServer;
