@@ -61,7 +61,7 @@ export function encodeSaleReceipt(sale: Sale, settings: StoreSettings): Uint8Arr
 
   // Store Header
   encoder.align('center');
-  encoder.bold(true).size(1, 1).line(sanitizeText(settings.name || 'TECHCELL')).size(0, 0).bold(false);
+  encoder.bold(true).size(2, 2).line(sanitizeText(settings.name || 'TECHCELL')).size(1, 1).bold(false);
   
   if (settings.cnpj) encoder.line(`CNPJ: ${sanitizeText(settings.cnpj)}`);
   if (settings.address) encoder.line(sanitizeText(settings.address));
@@ -117,7 +117,7 @@ export function encodeSaleReceipt(sale: Sale, settings: StoreSettings): Uint8Arr
     encoder.line(`ACRESCIMO: +${formatCurrency(sale.addition)}`);
   }
   
-  encoder.bold(true).size(0, 1).line(`TOTAL: ${formatCurrency(sale.total)}`).size(0, 0).bold(false);
+  encoder.bold(true).size(1, 2).line(`TOTAL: ${formatCurrency(sale.total)}`).size(1, 1).bold(false);
   encoder.rule({ style: 'single' });
 
   // Payment details
@@ -192,7 +192,7 @@ export function encodeOSReceipt(os: ServiceOrder, settings: StoreSettings, mode:
 
   // Store Header
   encoder.align('center');
-  encoder.bold(true).size(1, 1).line(sanitizeText(settings.name || 'TECHCELL ASSISTENCIA')).size(0, 0).bold(false);
+  encoder.bold(true).size(2, 2).line(sanitizeText(settings.name || 'TECHCELL ASSISTENCIA')).size(1, 1).bold(false);
   
   if (settings.cnpj) encoder.line(`CNPJ: ${sanitizeText(settings.cnpj)}`);
   if (settings.address) encoder.line(sanitizeText(settings.address));
@@ -256,7 +256,7 @@ export function encodeOSReceipt(os: ServiceOrder, settings: StoreSettings, mode:
 
   encoder.rule({ style: 'single' });
   encoder.align('right');
-  encoder.bold(true).size(0, 1).line(`VALOR TOTAL: ${formatCurrency(os.total)}`).size(0, 0).bold(false);
+  encoder.bold(true).size(1, 2).line(`VALOR TOTAL: ${formatCurrency(os.total)}`).size(1, 1).bold(false);
   
   encoder.rule({ style: 'single' });
   encoder.align('left');
@@ -297,7 +297,7 @@ export function encodeCashRegisterReceipt(status: CashRegisterStatus, settings: 
 
   encoder.initialize();
   encoder.align('center');
-  encoder.bold(true).size(1, 1).line(sanitizeText(settings.name || 'TECHCELL')).size(0, 0).bold(false);
+  encoder.bold(true).size(2, 2).line(sanitizeText(settings.name || 'TECHCELL')).size(1, 1).bold(false);
   encoder.rule({ style: 'single' });
   encoder.bold(true).line('FECHAMENTO DE CAIXA').bold(false);
   encoder.line(`DATA: ${formatDateTime(new Date().toISOString())}`);
@@ -325,7 +325,7 @@ export function encodeCashRegisterReceipt(status: CashRegisterStatus, settings: 
     encoder.rule({ style: 'single' });
 
     encoder.align('right');
-    encoder.bold(true).size(0, 1).line(`TOTAL EM GAVETA: ${formatCurrency(summary.calculatedExpectedCash)}`).size(0, 0).bold(false);
+    encoder.bold(true).size(1, 2).line(`TOTAL EM GAVETA: ${formatCurrency(summary.calculatedExpectedCash)}`).size(1, 1).bold(false);
   }
 
   encoder.newline().newline();
@@ -349,7 +349,7 @@ export function encodeTestReceipt(settings: StoreSettings): Uint8Array {
   encoder.initialize();
 
   encoder.align('center');
-  encoder.bold(true).size(1, 1).line('TESTE ESC/POS OK').size(0, 0).bold(false);
+  encoder.bold(true).size(2, 2).line('TESTE ESC/POS OK').size(1, 1).bold(false);
   encoder.line('BIBLIOTECA ESC/POS ATIVA');
   encoder.line(`LARGURA: ${settings.printer_width || '80mm'}`);
   encoder.rule({ style: 'double' });
@@ -365,7 +365,7 @@ export function encodeTestReceipt(settings: StoreSettings): Uint8Array {
   encoder.align('left');
   encoder.bold(true).line('4. TEXTO NEGRITO ATIVADO').bold(false);
   encoder.underline(true).line('5. Texto Sublinhado Ativado').underline(false);
-  encoder.size(1, 1).line('6. Altura e Largura Dupla').size(0, 0);
+  encoder.size(2, 2).line('6. Altura e Largura Dupla').size(1, 1);
 
   encoder.rule({ style: 'single' });
   encoder.align('center');
