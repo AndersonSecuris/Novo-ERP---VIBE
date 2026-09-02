@@ -100,12 +100,33 @@ export const SerialPortPicker: React.FC<SerialPortPickerProps> = ({
           text: `Porta serial vinculada: ${result.label}`
         });
         await loadAuthorizedPorts();
+      } else {
+        setMessage({
+          type: 'error',
+          text: 'Nenhuma porta foi selecionada no navegador (seleção cancelada). Clique na porta exibida na janelinha do topo e depois em "Conectar".'
+        });
       }
     } catch (err: any) {
-      setMessage({
-        type: 'error',
-        text: err.message || 'Não foi possível selecionar a porta serial.'
-      });
+      if (
+        err.name === 'NotFoundError' ||
+        err.message?.includes('No port selected') ||
+        err.message?.includes('requestPort')
+      ) {
+        setMessage({
+          type: 'error',
+          text: 'Nenhuma porta serial foi selecionada na janela do navegador (seleção cancelada).'
+        });
+      } else if (err.name === 'SecurityError') {
+        setMessage({
+          type: 'error',
+          text: 'Permissão para portas seriais bloqueada pelo navegador. Se estiver em uma janela incorporada (iframe), abra em uma nova aba.'
+        });
+      } else {
+        setMessage({
+          type: 'error',
+          text: err.message || 'Não foi possível selecionar a porta serial.'
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -474,6 +495,26 @@ export const SerialPortPicker: React.FC<SerialPortPickerProps> = ({
           <span>{message.text}</span>
         </div>
       )}
+
+      {/* Quick explanation of how WebSerial works */}
+      <div className="bg-slate-100/70 border border-slate-200/70 rounded-xl p-3 text-[11px] text-slate-600 space-y-1.5">
+        <div className="font-semibold text-slate-800 flex items-center gap-1.5">
+          <Sparkles className="w-3.5 h-3.5 text-purple-600 shrink-0" />
+          <span>Passo a passo para conectar a Porta Serial (COM):</span>
+        </div>
+        <p>
+          1. Conecte o cabo serial ou adaptador USB-Serial (CH340 / Prolific / FTDI) no computador.
+        </p>
+        <p>
+          2. Clique no botão roxo <strong>"Selecionar Porta Serial no Sistema"</strong> acima.
+        </p>
+        <p>
+          3. O navegador exibirá uma janelinha suspensa no topo da tela. <strong>Clique sobre o dispositivo da lista</strong> e confirme no botão <strong>"Conectar"</strong>.
+        </p>
+        <p className="text-slate-500 pt-0.5 border-t border-slate-200/60 mt-1">
+          💡 <em>Dica:</em> Se a impressora térmica for conectada por cabo USB comum já instalada no Windows (ex: POS-80, Elgin, Bematech), selecione o método <strong>"Diálogo de Impressão do Sistema"</strong> ou <strong>"USB Direto"</strong> acima.
+        </p>
+      </div>
     </div>
   );
 };

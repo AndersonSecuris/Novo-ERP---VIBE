@@ -420,14 +420,28 @@ export async function printViaWebUsb(buffer: Uint8Array): Promise<{ success: boo
   try {
     let device = activeUsbDevice;
     if (!device || !device.opened) {
-      // Request device filter for thermal printers (Class 7 = Printer) or open selector
-      device = await (navigator as any).usb.requestDevice({
-        filters: [{ classCode: 7 }]
-      }).catch(async () => {
-        // Fallback: show all USB devices in picker
-        return await (navigator as any).usb.requestDevice({ filters: [] });
-      });
-      activeUsbDevice = device;
+      try {
+        // Request device filter for thermal printers (Class 7 = Printer) or open selector
+        device = await (navigator as any).usb.requestDevice({
+          filters: [{ classCode: 7 }]
+        }).catch(async () => {
+          // Fallback: show all USB devices in picker
+          return await (navigator as any).usb.requestDevice({ filters: [] });
+        });
+        activeUsbDevice = device;
+      } catch (usbPromptErr: any) {
+        if (
+          usbPromptErr.name === 'NotFoundError' ||
+          usbPromptErr.message?.includes('No device selected') ||
+          usbPromptErr.message?.includes('cancelled')
+        ) {
+          return {
+            success: false,
+            error: 'Nenhuma impressora USB foi selecionada no diálogo do navegador (operação cancelada).'
+          };
+        }
+        throw usbPromptErr;
+      }
     }
 
     if (!device) {
@@ -475,6 +489,16 @@ export async function printViaWebUsb(buffer: Uint8Array): Promise<{ success: boo
     };
   } catch (err: any) {
     console.error('WebUSB error:', err);
+    if (
+      err.name === 'NotFoundError' ||
+      err.message?.includes('No device selected') ||
+      err.message?.includes('cancelled')
+    ) {
+      return {
+        success: false,
+        error: 'Nenhuma impressora USB foi selecionada no diálogo do navegador (operação cancelada).'
+      };
+    }
     return { success: false, error: err.message || 'Erro de comunicação USB.' };
   }
 }
@@ -594,8 +618,28 @@ export async function printViaWebSerial(
 
     // If still no port, prompt user to pick from OS serial ports
     if (!port) {
-      port = await (navigator as any).serial.requestPort();
-      activeSerialPort = port;
+      try {
+        port = await (navigator as any).serial.requestPort();
+        activeSerialPort = port;
+      } catch (reqErr: any) {
+        if (
+          reqErr.name === 'NotFoundError' ||
+          reqErr.message?.includes('No port selected') ||
+          reqErr.message?.includes('requestPort')
+        ) {
+          return {
+            success: false,
+            error: 'Nenhuma porta serial foi selecionada na janela do navegador (seleção cancelada). Por favor, conecte a impressora e confirme a porta desejada no diálogo.'
+          };
+        }
+        if (reqErr.name === 'SecurityError') {
+          return {
+            success: false,
+            error: 'Acesso à porta serial bloqueado pelo navegador. Caso esteja utilizando o sistema incorporado em um iframe, abra em uma nova aba.'
+          };
+        }
+        throw reqErr;
+      }
     }
 
     if (!port) {
@@ -629,6 +673,28 @@ export async function printViaWebSerial(
     return { success: true, portName };
   } catch (err: any) {
     console.error('WebSerial error:', err);
+    if (
+      err.name === 'NotFoundError' ||
+      err.message?.includes('No port selected') ||
+      err.message?.includes('requestPort')
+    ) {
+      return {
+        success: false,
+        error: 'Nenhuma porta serial foi selecionada na janela do navegador (seleção cancelada). Conecte a impressora e selecione a porta no diálogo.'
+      };
+    }
+    if (err.name === 'SecurityError') {
+      return {
+        success: false,
+        error: 'Permissão para portas seriais bloqueada pelo navegador. Se estiver em iframe, abra o sistema em uma nova aba.'
+      };
+    }
+    if (err.name === 'NetworkError' || err.message?.includes('Failed to open')) {
+      return {
+        success: false,
+        error: `Não foi possível abrir a porta serial a ${baudRate} bps. Verifique se a porta já está em uso por outro programa ou tente desligar e religar a impressora.`
+      };
+    }
     return { success: false, error: err.message || 'Erro de comunicação Serial / COM.' };
   }
 }
@@ -644,17 +710,31 @@ export async function printViaWebBluetooth(buffer: Uint8Array): Promise<{ succes
   try {
     let device = activeBluetoothDevice;
     if (!device || !device.gatt?.connected) {
-      device = await (navigator as any).bluetooth.requestDevice({
-        acceptAllDevices: true,
-        optionalServices: [
-          '000018f0-0000-1000-8000-00805f9b34fb', // ESC/POS service
-          'e7810a71-73ae-499d-8c15-faa9aef0c3f2',
-          0xffe0,
-          0x18f0,
-          0x49535343
-        ]
-      });
-      activeBluetoothDevice = device;
+      try {
+        device = await (navigator as any).bluetooth.requestDevice({
+          acceptAllDevices: true,
+          optionalServices: [
+            '000018f0-0000-1000-8000-00805f9b34fb', // ESC/POS service
+            'e7810a71-73ae-499d-8c15-faa9aef0c3f2',
+            0xffe0,
+            0x18f0,
+            0x49535343
+          ]
+        });
+        activeBluetoothDevice = device;
+      } catch (btPromptErr: any) {
+        if (
+          btPromptErr.name === 'NotFoundError' ||
+          btPromptErr.message?.includes('User cancelled') ||
+          btPromptErr.message?.includes('No device selected')
+        ) {
+          return {
+            success: false,
+            error: 'Nenhuma impressora Bluetooth foi selecionada no diálogo do navegador (busca cancelada).'
+          };
+        }
+        throw btPromptErr;
+      }
     }
 
     if (!device) {

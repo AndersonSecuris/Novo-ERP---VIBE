@@ -49,6 +49,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [testStatus, setTestStatus] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
   const [testing, setTesting] = useState(false);
+  const [selectedSerialObj, setSelectedSerialObj] = useState<any>(null);
 
   useEffect(() => {
     setFormData(settings);
@@ -80,7 +81,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     try {
       const conn = overrideConnection || formData.printer_connection || 'dialog';
       const buffer = encodeTestReceipt(formData);
-      const res = await printEscPosUniversal(buffer, formData, conn);
+      const res = await printEscPosUniversal(buffer, formData, conn, {
+        serialPort: selectedSerialObj
+      });
       setTestStatus({
         type: 'success',
         text: `✅ ${res.message || 'Comprovante de teste enviado com sucesso!'}`
@@ -101,7 +104,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     setTestStatus(null);
     try {
       const buffer = encodeCashDrawerPulse();
-      const res = await printEscPosUniversal(buffer, formData, formData.printer_connection || 'dialog');
+      const res = await printEscPosUniversal(buffer, formData, formData.printer_connection || 'dialog', {
+        serialPort: selectedSerialObj
+      });
       setTestStatus({
         type: 'success',
         text: '✅ Comando de abertura de gaveta (ESC p) enviado à impressora!'
@@ -261,7 +266,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
               {testStatus && (
                 <div
-                  className={`p-3 rounded-xl text-xs flex items-center justify-between gap-2 animate-in fade-in ${
+                  className={`p-3.5 rounded-xl text-xs space-y-2.5 animate-in fade-in ${
                     testStatus.type === 'success'
                       ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
                       : testStatus.type === 'error'
@@ -269,21 +274,76 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                       : 'bg-blue-50 text-blue-800 border border-blue-200'
                   }`}
                 >
-                  <div className="flex items-center gap-2">
-                    {testStatus.type === 'error' ? (
-                      <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
-                    ) : (
-                      <Check className="w-4 h-4 shrink-0 text-emerald-600" />
-                    )}
-                    <span>{testStatus.text}</span>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      {testStatus.type === 'error' ? (
+                        <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
+                      ) : (
+                        <Check className="w-4 h-4 shrink-0 text-emerald-600" />
+                      )}
+                      <span className="font-semibold">{testStatus.text}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setTestStatus(null)}
+                      className="text-slate-400 hover:text-slate-700 font-bold px-1"
+                    >
+                      ×
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setTestStatus(null)}
-                    className="text-slate-400 hover:text-slate-700"
-                  >
-                    ×
-                  </button>
+
+                  {/* Smart Guidance for Serial Port Error or User Cancellation */}
+                  {testStatus.type === 'error' &&
+                    (testStatus.text.toLowerCase().includes('serial') ||
+                     testStatus.text.toLowerCase().includes('requestport') ||
+                     testStatus.text.toLowerCase().includes('porta') ||
+                     testStatus.text.toLowerCase().includes('cancelada')) && (
+                    <div className="pt-2 border-t border-rose-200/80 text-[11px] text-rose-900 space-y-2 bg-rose-100/50 p-2.5 rounded-lg">
+                      <div className="font-bold flex items-center gap-1.5 text-rose-900">
+                        <Sparkles className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                        <span>Diagnóstico & Como Resolver:</span>
+                      </div>
+                      <p className="text-rose-800">
+                        O navegador abriu a janela de seleção de porta no topo da tela, mas nenhuma porta serial foi selecionada antes de fechar.
+                      </p>
+                      <div className="space-y-1.5 text-rose-800">
+                        <p>
+                          <strong>1. Se sua impressora usa cabo USB comum (já instalada no Windows):</strong> O Windows reconhece como impressora padrão e não porta COM serial. Clique no botão abaixo para usar a impressão direta:
+                        </p>
+                        <div className="flex flex-wrap items-center gap-2 pt-0.5">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setFormData({ ...formData, printer_connection: 'dialog' });
+                              setTestStatus({
+                                type: 'info',
+                                text: 'Método alterado para "Diálogo do Sistema (Windows)". Agora você pode clicar em "Imprimir Cupom de Teste" para imprimir pela fila do Windows.'
+                              });
+                            }}
+                            className="px-2.5 py-1 bg-white hover:bg-slate-50 border border-rose-300 text-rose-900 rounded-lg font-bold shadow-2xs transition-colors cursor-pointer"
+                          >
+                            ✓ Trocar para Diálogo do Windows (Recomendado)
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setFormData({ ...formData, printer_connection: 'webusb' });
+                              setTestStatus({
+                                type: 'info',
+                                text: 'Método alterado para "USB Direto (WebUSB)". Clique em "Imprimir Cupom de Teste" para vincular o dispositivo USB.'
+                              });
+                            }}
+                            className="px-2.5 py-1 bg-white hover:bg-slate-50 border border-rose-300 text-rose-900 rounded-lg font-bold shadow-2xs transition-colors cursor-pointer"
+                          >
+                            ✓ Trocar para USB Direto (WebUSB)
+                          </button>
+                        </div>
+                        <p className="pt-1">
+                          <strong>2. Se for uma impressora Serial física (COM / adaptador):</strong> Clique em "Selecionar Porta Serial no Sistema" abaixo, clique sobre o dispositivo que aparecer na listinha no topo da tela e clique no botão azul <strong>"Conectar"</strong>.
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -366,6 +426,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                       baudRate={formData.printer_baud_rate || 9600}
                       onPortNameChange={(name) => setFormData({ ...formData, printer_serial_port: name })}
                       onBaudRateChange={(rate) => setFormData({ ...formData, printer_baud_rate: rate })}
+                      onPortSelected={(port) => setSelectedSerialObj(port)}
                     />
                   </div>
                 )}
