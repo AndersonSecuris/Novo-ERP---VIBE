@@ -212,6 +212,8 @@ export interface CashRegisterStatus {
   } | null;
 }
 
+export type PrinterConnectionType = 'dialog' | 'webusb' | 'webserial' | 'webbluetooth' | 'network' | 'electron';
+
 export interface StoreSettings {
   id: string;
   name: string;
@@ -223,7 +225,7 @@ export interface StoreSettings {
   receipt_footer?: string;
   os_terms?: string;
   printer_width: '58mm' | '80mm';
-  printer_connection?: 'dialog' | 'webusb' | 'webserial' | 'webbluetooth' | 'network' | 'electron';
+  printer_connection?: PrinterConnectionType;
   printer_ip?: string;
   printer_port?: number;
   printer_baud_rate?: number;

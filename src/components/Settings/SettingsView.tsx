@@ -32,6 +32,7 @@ import {
   downloadRawEscPosFile
 } from '../../services/escpos';
 import { SerialPortPicker } from '../common/SerialPortPicker';
+import { PrinterConnectionModal } from './PrinterConnectionModal';
 
 interface SettingsViewProps {
   settings: StoreSettings;
@@ -50,6 +51,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const [testStatus, setTestStatus] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
   const [testing, setTesting] = useState(false);
   const [selectedSerialObj, setSelectedSerialObj] = useState<any>(null);
+  const [isPrinterModalOpen, setIsPrinterModalOpen] = useState(false);
 
   useEffect(() => {
     setFormData(settings);
@@ -261,6 +263,14 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   <span className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-100 text-slate-700">
                     Bobina: {formData.printer_width || '80mm'}
                   </span>
+                  <button
+                    type="button"
+                    onClick={() => setIsPrinterModalOpen(true)}
+                    className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-xs transition-all cursor-pointer"
+                  >
+                    <Printer className="w-4 h-4" />
+                    <span>Conectar Impressora (Assistente em Janela)</span>
+                  </button>
                 </div>
               </div>
 
@@ -304,13 +314,18 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                         <span>Diagnóstico & Como Resolver:</span>
                       </div>
                       <p className="text-rose-800">
-                        O navegador abriu a janela de seleção de porta no topo da tela, mas nenhuma porta serial foi selecionada antes de fechar.
+                        O navegador não completou o emparelhamento da porta serial física. Você pode abrir o assistente completo em janela ou usar o diálogo direto do Windows:
                       </p>
                       <div className="space-y-1.5 text-rose-800">
-                        <p>
-                          <strong>1. Se sua impressora usa cabo USB comum (já instalada no Windows):</strong> O Windows reconhece como impressora padrão e não porta COM serial. Clique no botão abaixo para usar a impressão direta:
-                        </p>
                         <div className="flex flex-wrap items-center gap-2 pt-0.5">
+                          <button
+                            type="button"
+                            onClick={() => setIsPrinterModalOpen(true)}
+                            className="px-3 py-1 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-bold text-xs flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
+                          >
+                            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                            Abrir Diálogo de Conexão da Impressora
+                          </button>
                           <button
                             type="button"
                             onClick={() => {
@@ -339,7 +354,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                           </button>
                         </div>
                         <p className="pt-1">
-                          <strong>2. Se for uma impressora Serial física (COM / adaptador):</strong> Clique em "Selecionar Porta Serial no Sistema" abaixo, clique sobre o dispositivo que aparecer na listinha no topo da tela e clique no botão azul <strong>"Conectar"</strong>.
+                          <strong>Dica para impressoras USB no Windows (POS-80, Bematech, Elgin):</strong> Recomendamos o "Diálogo do Windows", pois não requer seleção de porta COM e funciona de forma garantida.
                         </p>
                       </div>
                     </div>
@@ -427,6 +442,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                       onPortNameChange={(name) => setFormData({ ...formData, printer_serial_port: name })}
                       onBaudRateChange={(rate) => setFormData({ ...formData, printer_baud_rate: rate })}
                       onPortSelected={(port) => setSelectedSerialObj(port)}
+                      onOpenConnectionModal={() => setIsPrinterModalOpen(true)}
                     />
                   </div>
                 )}
@@ -495,6 +511,15 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               </p>
 
               <div className="flex flex-wrap gap-2.5 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsPrinterModalOpen(true)}
+                  className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-[0.98] text-white font-semibold text-xs flex items-center gap-2 shadow-xs transition-all cursor-pointer"
+                >
+                  <Sparkles className="w-4 h-4 text-amber-400" />
+                  Abrir Assistente de Conexão
+                </button>
+
                 <button
                   type="button"
                   disabled={testing}
@@ -837,6 +862,17 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           </button>
         </div>
       </form>
+
+      {/* Printer Connection Modal Dialog */}
+      <PrinterConnectionModal
+        isOpen={isPrinterModalOpen}
+        onClose={() => setIsPrinterModalOpen(false)}
+        settings={formData}
+        onSaveSettings={async (newSt) => {
+          setFormData(newSt);
+          onUpdateSettings(newSt);
+        }}
+      />
     </div>
   );
 };

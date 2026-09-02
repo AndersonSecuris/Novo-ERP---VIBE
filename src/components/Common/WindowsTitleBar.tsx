@@ -7,15 +7,17 @@ import {
   X,
   Maximize2,
   HardDrive,
-  Monitor
+  Monitor,
+  Printer
 } from 'lucide-react';
 import { StoreSettings } from '../../types';
 
 interface WindowsTitleBarProps {
   settings: StoreSettings;
+  onOpenPrinterModal?: () => void;
 }
 
-export const WindowsTitleBar: React.FC<WindowsTitleBarProps> = ({ settings }) => {
+export const WindowsTitleBar: React.FC<WindowsTitleBarProps> = ({ settings, onOpenPrinterModal }) => {
   const isElectron = typeof window !== 'undefined' && !!window.electronAPI?.isDesktop;
   const [isMaximized, setIsMaximized] = useState(false);
 
@@ -68,6 +70,19 @@ export const WindowsTitleBar: React.FC<WindowsTitleBarProps> = ({ settings }) =>
           <Monitor className="w-2.5 h-2.5" />
           {isElectron ? 'Windows App (.exe)' : 'Modo Desktop Habilitado'}
         </span>
+
+        {onOpenPrinterModal && (
+          <button
+            type="button"
+            onClick={onOpenPrinterModal}
+            className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-white hover:bg-slate-100 border border-slate-200/80 text-slate-700 shadow-2xs transition-colors cursor-pointer"
+            title="Conectar e Configurar Impressora Térmica"
+          >
+            <Printer className="w-3 h-3 text-blue-600" />
+            <span>Impressora</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          </button>
+        )}
       </div>
 
       {/* Center: Quick shortcuts helper */}

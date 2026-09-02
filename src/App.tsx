@@ -24,11 +24,13 @@ import { ClientsView } from './components/Clients/ClientsView';
 import { SettingsView } from './components/Settings/SettingsView';
 import { CashRegisterModal } from './components/PDV/CashRegisterModal';
 import { WindowsTitleBar } from './components/Common/WindowsTitleBar';
+import { PrinterConnectionModal } from './components/Settings/PrinterConnectionModal';
 
 type ActiveTab = 'pos' | 'os' | 'inventory' | 'sales' | 'clients' | 'settings';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('pos');
+  const [isPrinterModalOpen, setIsPrinterModalOpen] = useState(false);
   const [settings, setSettings] = useState<StoreSettings>({
     id: 'default',
     name: 'TechCell Assistência & PDV',
@@ -103,7 +105,10 @@ export default function App() {
   return (
     <div className="flex flex-col h-screen w-screen bg-[#f5f5f7] text-slate-900 overflow-hidden font-sans select-none">
       {/* Windows Native-like Title Bar */}
-      <WindowsTitleBar settings={settings} />
+      <WindowsTitleBar
+        settings={settings}
+        onOpenPrinterModal={() => setIsPrinterModalOpen(true)}
+      />
 
       <div className="flex flex-1 min-h-0 overflow-hidden">
         {/* Left Sidebar Navigation */}
@@ -247,6 +252,16 @@ export default function App() {
           }}
         />
       )}
+
+      {/* Global Printer Connection Modal */}
+      <PrinterConnectionModal
+        isOpen={isPrinterModalOpen}
+        onClose={() => setIsPrinterModalOpen(false)}
+        settings={settings}
+        onSaveSettings={async (newSt) => {
+          setSettings(newSt);
+        }}
+      />
     </div>
   );
 }

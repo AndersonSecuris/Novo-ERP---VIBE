@@ -518,6 +518,14 @@ export function isWebSerialSupported(): boolean {
   return typeof navigator !== 'undefined' && 'serial' in navigator;
 }
 
+export function isWebUsbSupported(): boolean {
+  return typeof navigator !== 'undefined' && 'usb' in navigator;
+}
+
+export function isWebBluetoothSupported(): boolean {
+  return typeof navigator !== 'undefined' && 'bluetooth' in navigator;
+}
+
 export function formatSerialPortLabel(port: any, index?: number): string {
   if (!port) return 'Nenhuma porta selecionada';
   try {
@@ -618,6 +626,12 @@ export async function printViaWebSerial(
 
     // If still no port, prompt user to pick from OS serial ports
     if (!port) {
+      if (typeof window !== 'undefined' && window.self !== window.top) {
+        return {
+          success: false,
+          error: 'O navegador restringe a seleção de portas seriais dentro de janelas incorporadas (iframe). Abra o sistema em uma nova aba do navegador para comunicação Serial direta, ou utilize o método "Diálogo do Windows" (100% compatível).'
+        };
+      }
       try {
         port = await (navigator as any).serial.requestPort();
         activeSerialPort = port;
@@ -892,13 +906,153 @@ export async function printEscPosUniversal(
     throw new Error(res.error || 'Falha ao imprimir via rede.');
   }
 
-  // 6. Standard Browser Print Dialog Fallback
-  window.print();
+  // 6. Standard Browser Print Dialog Fallback with Thermal Roll Formatting
+  const textReceipt = generateTestReceiptText(settings);
+  await printThermalReceiptViaBrowser(textReceipt, settings);
   return {
     success: true,
     mode: 'dialog',
-    message: 'Diálogo de impressão padrão do sistema acionado.'
+    message: 'Diálogo de impressão padrão do sistema acionado com formatação térmica.'
   };
+}
+
+/**
+ * Generates formatted plain-text receipt for thermal testing
+ */
+export function generateTestReceiptText(settings: StoreSettings): string {
+  const is58mm = settings.printer_width === '58mm';
+  const width = is58mm ? 32 : 48;
+  const divider = '-'.repeat(width);
+  const doubleDivider = '='.repeat(width);
+  const store = (settings.name || 'TECHCELL').toUpperCase();
+
+  const centerText = (str: string) => {
+    if (str.length >= width) return str.substring(0, width);
+    const pad = Math.floor((width - str.length) / 2);
+    return ' '.repeat(pad) + str;
+  };
+
+  const rightText = (str: string) => {
+    if (str.length >= width) return str.substring(0, width);
+    return ' '.repeat(width - str.length) + str;
+  };
+
+  return [
+    doubleDivider,
+    centerText(store),
+    settings.cnpj ? centerText(`CNPJ: ${settings.cnpj}`) : '',
+    settings.address ? centerText(settings.address) : '',
+    settings.phone ? centerText(`TEL: ${settings.phone}`) : '',
+    doubleDivider,
+    centerText('TESTE DE IMPRESSAO ESC/POS'),
+    centerText(`LARGURA: ${settings.printer_width || '80mm'} (${width} colunas)`),
+    centerText(`DATA: ${formatDateTime(new Date().toISOString())}`),
+    divider,
+    '1. Alinhamento: Esquerda',
+    centerText('2. Alinhamento: Centralizado'),
+    rightText('3. Alinhamento: Direita'),
+    divider,
+    '4. TEXTO NEGRITO E DESTACADO',
+    '5. TESTE DE BOBINA TERMICA OK',
+    divider,
+    is58mm ? '01 CABO USB-C          1x  25,00' : '01 CABO USB-C           1  UN    25,00   25,00',
+    is58mm ? '02 PELICULA 3D         1x  15,00' : '02 PELICULA 3D          1  UN    15,00   15,00',
+    divider,
+    rightText('TOTAL TESTE: R$ 40,00'),
+    doubleDivider,
+    centerText('COMPATIBILIDADE TERMICA:'),
+    centerText('Bematech, Elgin, Epson, Daruma, POS-80'),
+    doubleDivider,
+    centerText(settings.receipt_footer || 'Obrigado pela preferencia!'),
+    centerText('SISTEMA TECHCELL PDV'),
+    '\n- - - - - - CORTE AQUI - - - - - -'
+  ].filter(Boolean).join('\n');
+}
+
+/**
+ * Prints thermal receipt via the browser print dialog, scoping styles to the thermal paper roll
+ */
+export function printThermalReceiptViaBrowser(
+  receiptText: string,
+  settings: StoreSettings
+): Promise<{ success: boolean; error?: string }> {
+  return new Promise((resolve) => {
+    try {
+      const is58mm = settings.printer_width === '58mm';
+      const widthMm = is58mm ? '48mm' : '72mm';
+      const containerId = 'thermal-print-container';
+      let container = document.getElementById(containerId);
+      if (!container) {
+        container = document.createElement('div');
+        container.id = containerId;
+        document.body.appendChild(container);
+      }
+
+      const escaped = receiptText
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+
+      container.innerHTML = `
+        <style id="thermal-print-style">
+          @media screen {
+            #${containerId} { display: none !important; }
+          }
+          @media print {
+            @page {
+              margin: 0 !important;
+              size: auto;
+            }
+            html, body {
+              margin: 0 !important;
+              padding: 0 !important;
+              background: #fff !important;
+            }
+            body * {
+              visibility: hidden !important;
+            }
+            #${containerId}, #${containerId} * {
+              visibility: visible !important;
+            }
+            #${containerId} {
+              position: absolute !important;
+              left: 0 !important;
+              top: 0 !important;
+              width: ${widthMm} !important;
+              max-width: ${widthMm} !important;
+              margin: 0 !important;
+              padding: 2mm 1.5mm !important;
+              box-sizing: border-box !important;
+              font-family: 'Courier New', Courier, monospace !important;
+              font-size: ${is58mm ? '9.5px' : '11px'} !important;
+              line-height: 1.25 !important;
+              color: #000 !important;
+              white-space: pre-wrap !important;
+              word-break: break-all !important;
+            }
+          }
+        </style>
+        <pre style="margin: 0; font-family: inherit; font-size: inherit; white-space: pre-wrap; word-break: break-word;">${escaped}</pre>
+      `;
+
+      setTimeout(() => {
+        try {
+          window.print();
+          resolve({ success: true });
+        } catch (e: any) {
+          resolve({ success: false, error: e.message });
+        } finally {
+          setTimeout(() => {
+            if (container && container.parentNode) {
+              container.parentNode.removeChild(container);
+            }
+          }, 2000);
+        }
+      }, 100);
+    } catch (err: any) {
+      resolve({ success: false, error: err.message || 'Erro ao abrir janela de impressão.' });
+    }
+  });
 }
 
 /**

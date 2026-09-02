@@ -26,6 +26,7 @@ interface SerialPortPickerProps {
   onPortNameChange?: (portName: string) => void;
   onBaudRateChange?: (baudRate: number) => void;
   onPortSelected?: (port: any, info: SerialPortInfo) => void;
+  onOpenConnectionModal?: () => void;
   variant?: 'compact' | 'full';
   showBaudRate?: boolean;
 }
@@ -54,6 +55,7 @@ export const SerialPortPicker: React.FC<SerialPortPickerProps> = ({
   onPortNameChange,
   onBaudRateChange,
   onPortSelected,
+  onOpenConnectionModal,
   variant = 'compact',
   showBaudRate = true
 }) => {
@@ -82,6 +84,14 @@ export const SerialPortPicker: React.FC<SerialPortPickerProps> = ({
   }, [supported]);
 
   const handleRequestSystemPort = async () => {
+    if (typeof window !== 'undefined' && window.self !== window.top) {
+      setMessage({
+        type: 'error',
+        text: 'Navegadores restringem a caixa de diálogo nativa de portas seriais dentro de janelas incorporadas (iframe). Abra o sistema em uma nova aba do navegador para comunicação Serial direta, ou use o assistente de conexão.'
+      });
+      return;
+    }
+
     setLoading(true);
     setMessage(null);
     try {
@@ -415,6 +425,17 @@ export const SerialPortPicker: React.FC<SerialPortPickerProps> = ({
         </div>
 
         <div className="flex items-center gap-2">
+          {onOpenConnectionModal && (
+            <button
+              type="button"
+              onClick={onOpenConnectionModal}
+              className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-[0.98] text-white font-semibold text-xs flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              Abrir Assistente em Janela
+            </button>
+          )}
+
           {supported && (
             <button
               type="button"
