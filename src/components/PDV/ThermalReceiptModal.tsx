@@ -1,7 +1,26 @@
-import React, { useRef } from 'react';
-import { Printer, Copy, Check, X, Download, FileText, QrCode } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import {
+  Printer,
+  Copy,
+  Check,
+  X,
+  Download,
+  FileCode,
+  Wifi,
+  Usb,
+  Cpu,
+  Bluetooth,
+  Monitor,
+  Sparkles,
+  AlertCircle
+} from 'lucide-react';
 import { Sale, StoreSettings } from '../../types';
 import { formatCurrency, formatDateTime } from '../../services/api';
+import {
+  encodeSaleReceipt,
+  printEscPosUniversal,
+  downloadRawEscPosFile
+} from '../../services/escpos';
 
 interface ThermalReceiptModalProps {
   sale: Sale;
@@ -14,12 +33,49 @@ export const ThermalReceiptModal: React.FC<ThermalReceiptModalProps> = ({
   settings,
   onClose
 }) => {
-  const [copied, setCopied] = React.useState(false);
+  const [copied, setCopied] = useState(false);
+  const [printing, setPrinting] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
+  const [selectedConnection, setSelectedConnection] = useState<string>(
+    settings.printer_connection || 'dialog'
+  );
+  
   const receiptRef = useRef<HTMLDivElement>(null);
-  const widthClass = settings.printer_width === '58mm' ? 'max-w-[240px]' : 'max-w-[340px]';
+  const widthClass = settings.printer_width === '58mm' ? 'max-w-[250px]' : 'max-w-[340px]';
 
-  const handlePrint = () => {
-    window.print();
+  const handleEscPosPrint = async (targetType?: any) => {
+    setPrinting(true);
+    setStatusMessage(null);
+    try {
+      const conn = targetType || selectedConnection;
+      const buffer = encodeSaleReceipt(sale, settings);
+      
+      const result = await printEscPosUniversal(buffer, settings, conn as any);
+      setStatusMessage({
+        type: 'success',
+        text: result.message || 'Cupom ESC/POS processado com sucesso!'
+      });
+    } catch (err: any) {
+      setStatusMessage({
+        type: 'error',
+        text: err.message || 'Falha na comunicação ESC/POS com a impressora.'
+      });
+    } finally {
+      setPrinting(false);
+    }
+  };
+
+  const handleDownloadBin = () => {
+    try {
+      const buffer = encodeSaleReceipt(sale, settings);
+      downloadRawEscPosFile(buffer, `cupom_venda_${sale.sale_number}.bin`);
+      setStatusMessage({
+        type: 'info',
+        text: 'Arquivo binário ESC/POS (.bin) gerado e baixado.'
+      });
+    } catch (e: any) {
+      setStatusMessage({ type: 'error', text: 'Erro ao gerar binário ESC/POS.' });
+    }
   };
 
   const getPlainTextReceipt = () => {
@@ -89,12 +145,10 @@ export const ThermalReceiptModal: React.FC<ThermalReceiptModalProps> = ({
       await navigator.clipboard.writeText(getPlainTextReceipt());
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // Fallback
-    }
+    } catch {}
   };
 
-  const handleDownload = () => {
+  const handleDownloadTxt = () => {
     const text = getPlainTextReceipt();
     const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
@@ -106,45 +160,105 @@ export const ThermalReceiptModal: React.FC<ThermalReceiptModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm overflow-y-auto no-print">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-xl w-full shadow-2xl overflow-hidden flex flex-col my-auto max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md overflow-y-auto no-print">
+      <div className="bg-white border border-slate-200/80 rounded-2xl max-w-xl w-full shadow-2xl overflow-hidden flex flex-col my-auto max-h-[92vh] animate-in fade-in zoom-in-95 duration-150">
+        
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-900/60">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-[#fbfbfd]">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            <div className="p-2 rounded-xl bg-blue-50 text-blue-600 border border-blue-100 shadow-xs">
               <Printer className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-bold text-slate-100">Cupom Não Fiscal para Impressora Térmica</h3>
-              <p className="text-xs text-slate-400">
-                Formato bobina {settings.printer_width} (ESC/POS & Impressão Direta)
+              <div className="flex items-center gap-2">
+                <h3 className="font-semibold text-slate-900 text-base">Cupom de Venda</h3>
+                <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
+                  <Sparkles className="w-2.5 h-2.5" /> ESC/POS Ativo
+                </span>
+              </div>
+              <p className="text-xs text-slate-500">
+                Formato {settings.printer_width || '80mm'} • Cupom #{String(sale.sale_number).padStart(5, '0')}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Modal Body / Scrollable Preview */}
-        <div className="p-6 overflow-y-auto bg-slate-950 flex flex-col items-center">
-          {/* Thermal Paper Simulation Container */}
+        {/* Connection Bar */}
+        <div className="px-6 py-2.5 bg-slate-50/80 border-b border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs">
+          <div className="flex items-center gap-2 text-slate-600">
+            <span className="font-medium text-slate-700">Modo de envio:</span>
+            <select
+              value={selectedConnection}
+              onChange={(e) => setSelectedConnection(e.target.value)}
+              className="bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-slate-800 font-medium shadow-2xs focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            >
+              <option value="dialog">Diálogo Padrão (Ctrl+P)</option>
+              <option value="webusb">USB Direto (WebUSB ESC/POS)</option>
+              <option value="webserial">Porta Serial / COM (WebSerial)</option>
+              <option value="webbluetooth">Bluetooth Direto (ESC/POS)</option>
+              <option value="network">Rede IP TCP (Porta 9100)</option>
+              <option value="electron">Impressão Silenciosa Desktop</option>
+            </select>
+          </div>
+
+          <div className="flex items-center gap-1 text-[11px] text-slate-500">
+            {selectedConnection === 'webusb' && <span className="flex items-center gap-1 text-blue-600 font-medium"><Usb className="w-3.5 h-3.5" /> USB RAW</span>}
+            {selectedConnection === 'webserial' && <span className="flex items-center gap-1 text-purple-600 font-medium"><Cpu className="w-3.5 h-3.5" /> COM Serial</span>}
+            {selectedConnection === 'webbluetooth' && <span className="flex items-center gap-1 text-indigo-600 font-medium"><Bluetooth className="w-3.5 h-3.5" /> Bluetooth</span>}
+            {selectedConnection === 'network' && <span className="flex items-center gap-1 text-emerald-600 font-medium"><Wifi className="w-3.5 h-3.5" /> {settings.printer_ip || 'IP'}</span>}
+            {selectedConnection === 'dialog' && <span className="flex items-center gap-1 text-slate-600"><Monitor className="w-3.5 h-3.5" /> Spooler Navegador</span>}
+          </div>
+        </div>
+
+        {/* Status Toast Notification */}
+        {statusMessage && (
+          <div
+            className={`mx-6 mt-3 p-3 rounded-xl text-xs flex items-center justify-between gap-2 transition-all ${
+              statusMessage.type === 'success'
+                ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                : statusMessage.type === 'error'
+                ? 'bg-rose-50 text-rose-800 border border-rose-200'
+                : 'bg-blue-50 text-blue-800 border border-blue-200'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              {statusMessage.type === 'error' ? (
+                <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
+              ) : (
+                <Check className="w-4 h-4 shrink-0 text-emerald-600" />
+              )}
+              <span>{statusMessage.text}</span>
+            </div>
+            <button
+              onClick={() => setStatusMessage(null)}
+              className="text-slate-400 hover:text-slate-700 text-xs"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+
+        {/* Scrollable Visual Receipt Body */}
+        <div className="p-6 overflow-y-auto bg-[#f5f5f7] flex flex-col items-center">
           <div
             ref={receiptRef}
-            className={`w-full ${widthClass} bg-white text-black font-mono text-[11px] leading-tight p-4 shadow-xl border border-gray-300 rounded-sm select-text`}
+            className={`w-full ${widthClass} bg-white text-black font-mono text-[11px] leading-tight p-4 shadow-md border border-slate-300/80 rounded-sm select-text`}
           >
             {/* Header */}
             <div className="text-center pb-2 border-b border-dashed border-gray-400">
-              <div className="font-extrabold text-sm uppercase tracking-tight">
+              <div className="font-extrabold text-sm uppercase tracking-tight text-black">
                 {settings.name || 'PDV & ASSISTÊNCIA TÉCNICA'}
               </div>
               {settings.cnpj && <div className="text-[10px]">CNPJ: {settings.cnpj}</div>}
               {settings.address && <div className="text-[10px]">{settings.address}</div>}
               {settings.phone && <div className="text-[10px]">TEL: {settings.phone}</div>}
-              <div className="mt-1 font-bold text-xs bg-gray-100 py-0.5 border border-gray-300 rounded">
+              <div className="mt-1 font-bold text-xs bg-gray-100 py-0.5 border border-gray-300 rounded text-black">
                 CUPOM NÃO FISCAL
               </div>
             </div>
@@ -161,7 +275,7 @@ export const ThermalReceiptModal: React.FC<ThermalReceiptModalProps> = ({
               </div>
               <div className="flex justify-between">
                 <span>CLIENTE:</span>
-                <span className="font-semibold truncate max-w-[150px]">{sale.client_name || 'CONSUMIDOR'}</span>
+                <span className="font-semibold truncate max-w-[150px]">{sale.client_name || 'CONSUMIDOR FINAL'}</span>
               </div>
             </div>
 
@@ -235,7 +349,7 @@ export const ThermalReceiptModal: React.FC<ThermalReceiptModalProps> = ({
               )}
             </div>
 
-            {/* PIX Key if configured and payment is PIX */}
+            {/* PIX Key */}
             {sale.payment_method === 'pix' && settings.pix_key && (
               <div className="py-2 border-b border-dashed border-gray-400 text-center text-[10px]">
                 <div className="font-bold mb-0.5">CHAVE PIX ({settings.pix_key_type || 'CHAVE'}):</div>
@@ -260,122 +374,53 @@ export const ThermalReceiptModal: React.FC<ThermalReceiptModalProps> = ({
           </div>
         </div>
 
-        {/* Modal Actions */}
-        <div className="flex items-center justify-between p-4 border-t border-slate-800 bg-slate-900/90 gap-2">
-          <div className="flex items-center gap-2">
+        {/* Modal Actions Footer */}
+        <div className="flex flex-wrap items-center justify-between p-4 border-t border-slate-100 bg-[#fbfbfd] gap-2">
+          <div className="flex items-center gap-1.5">
             <button
               onClick={handleCopyText}
-              className="px-3 py-2 text-xs font-semibold rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 flex items-center gap-1.5 transition-colors border border-slate-700"
-              title="Copiar texto puro para spoolers ou impressoras texto"
+              className="px-2.5 py-1.5 text-xs font-medium rounded-xl bg-white hover:bg-slate-50 text-slate-700 flex items-center gap-1.5 transition-colors border border-slate-200 shadow-2xs cursor-pointer"
+              title="Copiar texto puro do cupom"
             >
-              {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
-              {copied ? 'Copiado!' : 'Copiar Texto'}
+              {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-slate-500" />}
+              {copied ? 'Copiado' : 'Texto'}
             </button>
 
             <button
-              onClick={handleDownload}
-              className="px-3 py-2 text-xs font-semibold rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 flex items-center gap-1.5 transition-colors border border-slate-700"
+              onClick={handleDownloadTxt}
+              className="px-2.5 py-1.5 text-xs font-medium rounded-xl bg-white hover:bg-slate-50 text-slate-700 flex items-center gap-1.5 transition-colors border border-slate-200 shadow-2xs cursor-pointer"
               title="Baixar arquivo TXT"
             >
-              <Download className="w-4 h-4" />
-              Baixar .TXT
+              <Download className="w-3.5 h-3.5 text-slate-500" />
+              .TXT
+            </button>
+
+            <button
+              onClick={handleDownloadBin}
+              className="px-2.5 py-1.5 text-xs font-medium rounded-xl bg-white hover:bg-slate-50 text-blue-700 flex items-center gap-1.5 transition-colors border border-blue-200 shadow-2xs cursor-pointer"
+              title="Baixar binário ESC/POS para Spooler Raw, DOSPrint ou RawBT"
+            >
+              <FileCode className="w-3.5 h-3.5 text-blue-600" />
+              ESC/POS .BIN
             </button>
           </div>
 
           <div className="flex items-center gap-2">
             <button
               onClick={onClose}
-              className="px-4 py-2 text-xs font-semibold rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
+              className="px-3.5 py-2 text-xs font-medium rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
             >
               Fechar
             </button>
             <button
-              onClick={handlePrint}
-              className="px-5 py-2 text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white flex items-center gap-2 transition-all shadow-lg shadow-emerald-600/30"
+              onClick={() => handleEscPosPrint()}
+              disabled={printing}
+              className="px-5 py-2 text-xs font-semibold rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white flex items-center gap-2 transition-all shadow-sm cursor-pointer disabled:opacity-50"
             >
               <Printer className="w-4 h-4" />
-              Imprimir na Térmica (Ctrl+P)
+              {printing ? 'Imprimindo...' : 'Imprimir na Térmica'}
             </button>
           </div>
-        </div>
-      </div>
-
-      {/* Hidden Print-Only Container with Thermal Printer width format */}
-      <div className="print-only-container hidden">
-        <div
-          style={{
-            width: settings.printer_width === '58mm' ? '54mm' : '76mm',
-            margin: '0 auto',
-            padding: '4px',
-            fontFamily: 'monospace',
-            fontSize: '11px',
-            lineHeight: '1.2',
-            color: '#000',
-            backgroundColor: '#fff'
-          }}
-        >
-          <div style={{ textAlign: 'center', marginBottom: '8px' }}>
-            <div style={{ fontWeight: 'bold', fontSize: '13px', textTransform: 'uppercase' }}>
-              {settings.name || 'PDV & ASSISTÊNCIA'}
-            </div>
-            {settings.cnpj && <div>CNPJ: {settings.cnpj}</div>}
-            {settings.address && <div>{settings.address}</div>}
-            {settings.phone && <div>TEL: {settings.phone}</div>}
-            <div style={{ marginTop: '4px', fontWeight: 'bold' }}>CUPOM NÃO FISCAL</div>
-          </div>
-
-          <div style={{ borderBottom: '1px dashed #000', paddingBottom: '4px', marginBottom: '4px' }}>
-            <div>CUPOM: #{String(sale.sale_number).padStart(5, '0')}</div>
-            <div>DATA: {formatDateTime(sale.created_at)}</div>
-            <div>CLIENTE: {sale.client_name || 'CONSUMIDOR'}</div>
-          </div>
-
-          <div style={{ borderBottom: '1px dashed #000', paddingBottom: '4px', marginBottom: '4px' }}>
-            {sale.items.map((item, i) => (
-              <div key={i} style={{ marginBottom: '3px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold' }}>
-                  <span>{i + 1}. {item.name}</span>
-                  <span>{formatCurrency(item.subtotal)}</span>
-                </div>
-                <div style={{ fontSize: '10px' }}>
-                  {item.quantity} {item.unit || 'UN'} x {formatCurrency(item.price)}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div style={{ borderBottom: '1px dashed #000', paddingBottom: '4px', marginBottom: '4px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span>SUBTOTAL:</span>
-              <span>{formatCurrency(sale.subtotal)}</span>
-            </div>
-            {sale.discount > 0 && (
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>DESCONTO:</span>
-                <span>-{formatCurrency(sale.discount)}</span>
-              </div>
-            )}
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '13px' }}>
-              <span>TOTAL:</span>
-              <span>{formatCurrency(sale.total)}</span>
-            </div>
-          </div>
-
-          <div style={{ borderBottom: '1px dashed #000', paddingBottom: '4px', marginBottom: '6px' }}>
-            <div>FORMA: {sale.payment_method.toUpperCase()}</div>
-            {sale.payment_method === 'dinheiro' && (
-              <>
-                <div>PAGO: {formatCurrency(sale.amount_paid)}</div>
-                <div>TROCO: {formatCurrency(sale.change_amount)}</div>
-              </>
-            )}
-          </div>
-
-          {settings.receipt_footer && (
-            <div style={{ textAlign: 'center', fontSize: '9px', whiteSpace: 'pre-line' }}>
-              {settings.receipt_footer}
-            </div>
-          )}
         </div>
       </div>
     </div>

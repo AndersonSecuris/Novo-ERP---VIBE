@@ -101,25 +101,25 @@ export default function App() {
   ];
 
   return (
-    <div className="flex flex-col h-screen w-screen bg-slate-950 text-slate-100 overflow-hidden font-sans select-none">
+    <div className="flex flex-col h-screen w-screen bg-[#f5f5f7] text-slate-900 overflow-hidden font-sans select-none">
       {/* Windows Native-like Title Bar */}
       <WindowsTitleBar settings={settings} />
 
       <div className="flex flex-1 min-h-0 overflow-hidden">
         {/* Left Sidebar Navigation */}
-        <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col justify-between shrink-0 no-print">
+        <aside className="w-64 bg-white/95 backdrop-blur-md border-r border-slate-200/80 flex flex-col justify-between shrink-0 no-print shadow-xs">
           {/* Brand & Store header */}
-          <div className="p-4 border-b border-slate-800">
+          <div className="p-4 border-b border-slate-200/80">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-600/30">
-                <Smartphone className="w-4.5 h-4.5" />
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
+                <Smartphone className="w-5 h-5" />
               </div>
               <div className="min-w-0">
-                <h1 className="font-extrabold text-xs text-slate-100 truncate">
+                <h1 className="font-bold text-sm text-slate-900 truncate">
                   {settings.name || 'PDV & Assistência'}
                 </h1>
-                <div className="flex items-center gap-1.5 text-[10px] text-emerald-400 font-medium">
-                  <Circle className="w-1.5 h-1.5 fill-emerald-400 text-emerald-400 animate-pulse" />
+                <div className="flex items-center gap-1.5 text-[11px] text-emerald-600 font-medium">
+                  <Circle className="w-1.5 h-1.5 fill-emerald-500 text-emerald-500 animate-pulse" />
                   SQLite Ativo (Windows/Web)
                 </div>
               </div>
@@ -135,10 +135,10 @@ export default function App() {
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id as ActiveTab)}
-                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     isSelected
-                      ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30 translate-x-1'
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/80'
+                      ? 'bg-blue-600 text-white shadow-sm shadow-blue-600/30'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80'
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -147,10 +147,10 @@ export default function App() {
                   </div>
                   {item.badge && (
                     <span
-                      className={`px-1.5 py-0.5 rounded text-[9px] font-extrabold uppercase ${
+                      className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${
                         isSelected
-                          ? 'bg-indigo-700 text-indigo-100'
-                          : 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'
+                          ? 'bg-blue-700/80 text-white'
+                          : 'bg-blue-50 text-blue-700 border border-blue-200/60'
                       }`}
                     >
                       {item.badge}
@@ -162,18 +162,18 @@ export default function App() {
           </nav>
 
           {/* Cash Register Widget in Sidebar */}
-          <div className="p-3 border-t border-slate-800 bg-slate-950/40">
-            <div className="p-2.5 bg-slate-900 rounded-xl border border-slate-800 space-y-2">
+          <div className="p-3 border-t border-slate-200/80 bg-slate-50/50">
+            <div className="p-3 bg-white rounded-xl border border-slate-200/80 shadow-xs space-y-2.5">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-semibold text-slate-400 flex items-center gap-1.5">
-                  <Vault className="w-3.5 h-3.5 text-indigo-400" />
+                <span className="text-[11px] font-semibold text-slate-700 flex items-center gap-1.5">
+                  <Vault className="w-3.5 h-3.5 text-blue-600" />
                   Caixa Operacional
                 </span>
                 <span
-                  className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase ${
+                  className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${
                     activeRegister
-                      ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                      : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                      : 'bg-rose-50 text-rose-700 border border-rose-200'
                   }`}
                 >
                   {activeRegister ? 'Aberto' : 'Fechado'}
@@ -183,7 +183,7 @@ export default function App() {
               {activeRegister ? (
                 <div>
                   <span className="text-[10px] text-slate-500 block">Operador: {activeRegister.operator_name}</span>
-                  <span className="text-xs font-mono font-bold text-slate-200 block">
+                  <span className="text-xs font-mono font-bold text-slate-800 block">
                     Abertura: {formatCurrency(activeRegister.initial_cash)}
                   </span>
                 </div>
@@ -193,9 +193,9 @@ export default function App() {
 
               <button
                 onClick={() => setIsCashModalOpen(true)}
-                className="w-full py-1.5 px-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                className="w-full py-2 px-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 cursor-pointer border border-slate-200/60"
               >
-                <Vault className="w-3.5 h-3.5" />
+                <Vault className="w-3.5 h-3.5 text-slate-600" />
                 {activeRegister ? 'Gerenciar / Fechar' : 'Abrir Caixa'}
               </button>
             </div>
@@ -203,7 +203,7 @@ export default function App() {
         </aside>
 
         {/* Main Screen Content Area */}
-        <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+        <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative bg-[#f5f5f7]">
           {/* Render View depending on active tab */}
           {activeTab === 'pos' && (
             <POSView
@@ -241,9 +241,8 @@ export default function App() {
       {/* Cash Register Modal */}
       {isCashModalOpen && (
         <CashRegisterModal
-          activeRegister={activeRegister}
           onClose={() => setIsCashModalOpen(false)}
-          onRegisterUpdated={() => {
+          onStatusChanged={() => {
             loadSystem();
           }}
         />

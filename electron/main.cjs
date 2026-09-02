@@ -54,7 +54,7 @@ async function createWindow() {
     minWidth: 1024,
     minHeight: 640,
     title: 'TechCell - PDV & Assistência Técnica',
-    backgroundColor: '#020617', // slate-950
+    backgroundColor: '#f5f5f7', // light Apple theme
     frame: true, // Native Windows Title Bar & controls
     show: false,
     webPreferences: {

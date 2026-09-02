@@ -1,6 +1,7 @@
 import express from 'express';
 import path from 'path';
 import cors from 'cors';
+import net from 'net';
 import { createServer as createViteServer } from 'vite';
 import {
   initDatabase,
@@ -55,12 +56,17 @@ async function startServer() {
       runQuery(
         `UPDATE store_settings SET
           name = ?, cnpj = ?, phone = ?, whatsapp = ?, address = ?, city_state = ?,
-          receipt_footer = ?, os_terms = ?, printer_width = ?, pix_key = ?, pix_key_type = ?,
-          pix_beneficiary = ?, whatsapp_templates = ?
+          receipt_footer = ?, os_terms = ?, printer_width = ?,
+          printer_connection = ?, printer_ip = ?, printer_port = ?, printer_baud_rate = ?,
+          printer_cut_paper = ?, printer_open_drawer = ?, printer_codepage = ?, printer_model = ?,
+          pix_key = ?, pix_key_type = ?, pix_beneficiary = ?, whatsapp_templates = ?
         WHERE id = 'default'`,
         [
           s.name, s.cnpj, s.phone, s.whatsapp, s.address, s.city_state,
           s.receipt_footer, s.os_terms, s.printer_width || '80mm',
+          s.printer_connection || 'dialog', s.printer_ip || null, Number(s.printer_port || 9100),
+          Number(s.printer_baud_rate || 9600), s.printer_cut_paper ? 1 : 0, s.printer_open_drawer ? 1 : 0,
+          s.printer_codepage || 'epson', s.printer_model || 'generic',
           s.pix_key, s.pix_key_type, s.pix_beneficiary, templatesStr
         ]
       );
@@ -68,6 +74,68 @@ async function startServer() {
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }
+  });
+
+  // Printer Direct Network Print (TCP Socket Port 9100)
+  app.post('/api/printer/network-print', (req, res) => {
+    const { ip, port = 9100, buffer } = req.body;
+    if (!ip) {
+      return res.status(400).json({ error: 'Endereço IP da impressora é obrigatório.' });
+    }
+    if (!buffer) {
+      return res.status(400).json({ error: 'Buffer de impressão não fornecido.' });
+    }
+
+    try {
+      const rawData = Buffer.from(buffer, 'base64');
+      const client = new net.Socket();
+      client.setTimeout(5000);
+
+      client.connect(Number(port) || 9100, ip, () => {
+        client.write(rawData, () => {
+          client.end();
+          res.json({ success: true, message: `Dados enviados com sucesso para a impressora ${ip}:${port}` });
+        });
+      });
+
+      client.on('error', (err) => {
+        client.destroy();
+        res.status(500).json({ error: `Erro de conexão TCP com a impressora: ${err.message}` });
+      });
+
+      client.on('timeout', () => {
+        client.destroy();
+        res.status(504).json({ error: `Tempo limite de conexão esgotado (Timeout) ao conectar em ${ip}:${port}` });
+      });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message || 'Falha no processamento do buffer de impressão.' });
+    }
+  });
+
+  // Printer Network Ping/Connection Test
+  app.post('/api/printer/test-network', (req, res) => {
+    const { ip, port = 9100 } = req.body;
+    if (!ip) {
+      return res.status(400).json({ error: 'Endereço IP da impressora é obrigatório.' });
+    }
+
+    const socket = new net.Socket();
+    socket.setTimeout(4000);
+
+    socket.connect(Number(port) || 9100, ip, () => {
+      socket.end();
+      res.json({ success: true, message: `Conexão bem sucedida com a impressora ${ip}:${port}!` });
+    });
+
+    socket.on('error', (err) => {
+      socket.destroy();
+      res.status(500).json({ error: `Falha ao alcançar a porta ${port} no IP ${ip}: ${err.message}` });
+    });
+
+    socket.on('timeout', () => {
+      socket.destroy();
+      res.status(504).json({ error: `Timeout: A impressora no IP ${ip}:${port} não respondeu.` });
+    });
   });
 
   // Products

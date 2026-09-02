@@ -81,18 +81,18 @@ export const ServiceOrdersView: React.FC<ServiceOrdersViewProps> = ({ settings }
 
   const getStatusBadge = (status: OSStatus) => {
     const map: Record<OSStatus, { label: string; bg: string; text: string; border: string }> = {
-      aguardando_analise: { label: 'Aguardando Análise', bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/20' },
-      em_analise: { label: 'Em Análise', bg: 'bg-sky-500/10', text: 'text-sky-400', border: 'border-sky-500/20' },
-      aguardando_aprovacao: { label: 'Aguardando Aprovação', bg: 'bg-yellow-500/10', text: 'text-yellow-400', border: 'border-yellow-500/20' },
-      aprovado: { label: 'Aprovado / Em Reparo', bg: 'bg-indigo-500/10', text: 'text-indigo-400', border: 'border-indigo-500/20' },
-      aguardando_peca: { label: 'Aguardando Peça', bg: 'bg-purple-500/10', text: 'text-purple-400', border: 'border-purple-500/20' },
-      pronto: { label: 'Pronto para Retirada', bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/20' },
-      entregue: { label: 'Entregue / Concluído', bg: 'bg-teal-500/10', text: 'text-teal-400', border: 'border-teal-500/20' },
-      cancelado: { label: 'Cancelado', bg: 'bg-rose-500/10', text: 'text-rose-400', border: 'border-rose-500/20' }
+      aguardando_analise: { label: 'Aguardando Análise', bg: 'bg-amber-50', text: 'text-amber-800', border: 'border-amber-200' },
+      em_analise: { label: 'Em Análise', bg: 'bg-sky-50', text: 'text-sky-800', border: 'border-sky-200' },
+      aguardando_aprovacao: { label: 'Aguardando Aprovação', bg: 'bg-yellow-50', text: 'text-yellow-800', border: 'border-yellow-200' },
+      aprovado: { label: 'Aprovado / Em Reparo', bg: 'bg-blue-50', text: 'text-blue-800', border: 'border-blue-200' },
+      aguardando_peca: { label: 'Aguardando Peça', bg: 'bg-purple-50', text: 'text-purple-800', border: 'border-purple-200' },
+      pronto: { label: 'Pronto para Retirada', bg: 'bg-emerald-50', text: 'text-emerald-800', border: 'border-emerald-200' },
+      entregue: { label: 'Entregue / Concluído', bg: 'bg-teal-50', text: 'text-teal-800', border: 'border-teal-200' },
+      cancelado: { label: 'Cancelado', bg: 'bg-rose-50', text: 'text-rose-800', border: 'border-rose-200' }
     };
     const s = map[status] || map.aguardando_analise;
     return (
-      <span className={`px-2.5 py-1 rounded-lg text-xs font-bold border ${s.bg} ${s.text} ${s.border} whitespace-nowrap`}>
+      <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${s.bg} ${s.text} ${s.border} whitespace-nowrap`}>
         {s.label}
       </span>
     );
@@ -100,33 +100,33 @@ export const ServiceOrdersView: React.FC<ServiceOrdersViewProps> = ({ settings }
 
   const getPriorityBadge = (priority: string) => {
     if (priority === 'urgente') {
-      return <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-rose-500/20 text-rose-300 border border-rose-500/30">Urgente</span>;
+      return <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-rose-50 text-rose-700 border border-rose-200">Urgente</span>;
     }
     if (priority === 'alta') {
-      return <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-amber-500/20 text-amber-300 border border-amber-500/30">Alta</span>;
+      return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-amber-50 text-amber-800 border border-amber-200">Alta</span>;
     }
     return null;
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden p-4 lg:p-6 bg-slate-950">
+    <div className="flex-1 flex flex-col h-full overflow-hidden p-4 lg:p-6 bg-[#f5f5f7]">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
         <div>
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+            <div className="p-2 rounded-xl bg-blue-50 text-blue-600 border border-blue-100">
               <Wrench className="w-5 h-5" />
             </div>
-            <h2 className="text-xl font-black text-slate-100">Ordens de Serviço - Celulares</h2>
+            <h2 className="text-xl font-black text-slate-900">Ordens de Serviço - Celulares</h2>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-slate-500 mt-1">
             Gestão de assistência técnica, controle de aparelhos, checklists, laudos e avisos via WhatsApp
           </p>
         </div>
 
         <button
           onClick={() => setIsNewModalOpen(true)}
-          className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-indigo-600/30 transition-all cursor-pointer"
+          className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-2 shadow-xs transition-all cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           Nova Ordem de Serviço
@@ -151,10 +151,10 @@ export const ServiceOrdersView: React.FC<ServiceOrdersViewProps> = ({ settings }
             <button
               key={tab.id}
               onClick={() => setStatusFilter(tab.id)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                 statusFilter === tab.id
-                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                  : 'bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800'
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200'
               }`}
             >
               {tab.label}
@@ -171,7 +171,7 @@ export const ServiceOrdersView: React.FC<ServiceOrdersViewProps> = ({ settings }
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder="Buscar por cliente, nº da OS, modelo do celular, IMEI ou fone..."
-              className="w-full pl-10 pr-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 placeholder-slate-500 text-xs focus:outline-none focus:border-indigo-500"
+              className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 text-xs focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
             />
           </div>
 
@@ -179,7 +179,7 @@ export const ServiceOrdersView: React.FC<ServiceOrdersViewProps> = ({ settings }
             <select
               value={priorityFilter}
               onChange={e => setPriorityFilter(e.target.value)}
-              className="px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-300 text-xs focus:outline-none focus:border-indigo-500"
+              className="px-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-700 text-xs focus:outline-none focus:border-blue-500"
             >
               <option value="all">Todas as Prioridades</option>
               <option value="urgente">Urgente</option>
@@ -195,8 +195,8 @@ export const ServiceOrdersView: React.FC<ServiceOrdersViewProps> = ({ settings }
         {loading ? (
           <div className="py-20 text-center text-slate-400 text-sm">Carregando ordens de serviço...</div>
         ) : orders.length === 0 ? (
-          <div className="py-20 flex flex-col items-center justify-center text-slate-500 text-sm">
-            <Smartphone className="w-12 h-12 stroke-1 mb-2 text-slate-700" />
+          <div className="py-20 flex flex-col items-center justify-center text-slate-400 text-sm">
+            <Smartphone className="w-12 h-12 stroke-1 mb-2 text-slate-300" />
             <p>Nenhuma ordem de serviço encontrada com os filtros selecionados.</p>
           </div>
         ) : (
@@ -205,13 +205,13 @@ export const ServiceOrdersView: React.FC<ServiceOrdersViewProps> = ({ settings }
             return (
               <div
                 key={os.id}
-                className="p-4 sm:p-5 rounded-2xl bg-slate-900/80 hover:bg-slate-900 border border-slate-800/90 hover:border-slate-700 transition-all shadow-md flex flex-col lg:flex-row lg:items-center justify-between gap-4"
+                className="p-4 sm:p-5 rounded-2xl bg-white hover:bg-slate-50/70 border border-slate-200/90 hover:border-slate-300 transition-all shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4"
               >
                 {/* Left: OS details & Device Info */}
                 <div className="flex items-start gap-3.5 flex-1 min-w-0">
                   {/* Photo thumbnail or Device Icon */}
                   {hasPhotos ? (
-                    <div className="w-14 h-14 rounded-xl overflow-hidden bg-slate-950 border border-slate-800 shrink-0">
+                    <div className="w-14 h-14 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
                       <img
                         src={os.photos[0].url}
                         alt="Aparelho"
@@ -219,7 +219,7 @@ export const ServiceOrdersView: React.FC<ServiceOrdersViewProps> = ({ settings }
                       />
                     </div>
                   ) : (
-                    <div className="w-14 h-14 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center text-indigo-400 shrink-0">
+                    <div className="w-14 h-14 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0">
                       <Smartphone className="w-6 h-6" />
                     </div>
                   )}
@@ -227,10 +227,10 @@ export const ServiceOrdersView: React.FC<ServiceOrdersViewProps> = ({ settings }
                   <div className="min-w-0 flex-1">
                     {/* Header line: OS Number, Brand/Model, Priority, Status */}
                     <div className="flex flex-wrap items-center gap-2 mb-1">
-                      <span className="font-mono font-bold text-sm text-indigo-400">
+                      <span className="font-mono font-bold text-sm text-blue-600">
                         #{String(os.os_number).padStart(5, '0')}
                       </span>
-                      <h3 className="font-extrabold text-slate-100 text-sm sm:text-base truncate">
+                      <h3 className="font-extrabold text-slate-900 text-sm sm:text-base truncate">
                         {os.device_brand} {os.device_model}
                       </h3>
                       {getPriorityBadge(os.priority)}
@@ -238,8 +238,8 @@ export const ServiceOrdersView: React.FC<ServiceOrdersViewProps> = ({ settings }
                     </div>
 
                     {/* Client & Contact line */}
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-400 mb-1.5">
-                      <span className="flex items-center gap-1 font-semibold text-slate-200">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500 mb-1.5">
+                      <span className="flex items-center gap-1 font-semibold text-slate-800">
                         <User className="w-3.5 h-3.5 text-slate-400" />
                         {os.client_name}
                       </span>
@@ -254,21 +254,21 @@ export const ServiceOrdersView: React.FC<ServiceOrdersViewProps> = ({ settings }
                     </div>
 
                     {/* Defect preview */}
-                    <div className="text-xs text-slate-300 line-clamp-1 bg-slate-950/60 px-2.5 py-1 rounded-lg border border-slate-800/80">
-                      <span className="font-bold text-slate-400">Defeito: </span>
+                    <div className="text-xs text-slate-700 line-clamp-1 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200">
+                      <span className="font-bold text-slate-500">Defeito: </span>
                       {os.reported_defect}
                     </div>
                   </div>
                 </div>
 
                 {/* Right: Financial, Dates & Action Buttons */}
-                <div className="flex flex-wrap lg:flex-nowrap items-center justify-between lg:justify-end gap-3 pt-3 lg:pt-0 border-t lg:border-t-0 border-slate-800">
+                <div className="flex flex-wrap lg:flex-nowrap items-center justify-between lg:justify-end gap-3 pt-3 lg:pt-0 border-t lg:border-t-0 border-slate-100">
                   <div className="text-left lg:text-right pr-2">
-                    <span className="text-[11px] text-slate-400 block">Total do Reparo</span>
-                    <span className="text-base font-extrabold text-emerald-400 font-mono">
+                    <span className="text-[11px] text-slate-500 block">Total do Reparo</span>
+                    <span className="text-base font-extrabold text-emerald-600 font-mono">
                       {formatCurrency(os.total)}
                     </span>
-                    <span className="text-[10px] text-slate-500 block">
+                    <span className="text-[10px] text-slate-400 block">
                       Entrada: {formatDateTime(os.created_at)}
                     </span>
                   </div>
@@ -278,7 +278,7 @@ export const ServiceOrdersView: React.FC<ServiceOrdersViewProps> = ({ settings }
                     {/* WhatsApp notification button */}
                     <button
                       onClick={() => setSelectedOSToNotify(os)}
-                      className="p-2.5 rounded-xl bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-400 border border-emerald-500/20 hover:border-emerald-500/40 text-xs font-bold flex items-center gap-1.5 transition-all"
+                      className="p-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
                       title="Atualizar Status e Enviar WhatsApp"
                     >
                       <MessageSquare className="w-4 h-4" />
@@ -288,7 +288,7 @@ export const ServiceOrdersView: React.FC<ServiceOrdersViewProps> = ({ settings }
                     {/* Print Slip */}
                     <button
                       onClick={() => setSelectedOSToPrint({ os, mode: os.status === 'entregue' ? 'delivery' : 'entry' })}
-                      className="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold flex items-center gap-1.5 transition-all"
+                      className="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
                       title="Imprimir Comprovante Térmico"
                     >
                       <Printer className="w-4 h-4" />
@@ -298,7 +298,7 @@ export const ServiceOrdersView: React.FC<ServiceOrdersViewProps> = ({ settings }
                     {/* Edit button */}
                     <button
                       onClick={() => setSelectedOSToEdit(os)}
-                      className="px-3.5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-md shadow-indigo-600/20"
+                      className="px-3.5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
                     >
                       Editar OS
                       <ChevronRight className="w-4 h-4" />

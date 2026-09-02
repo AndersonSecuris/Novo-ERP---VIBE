@@ -268,6 +268,18 @@ export const api = {
     });
     if (!res.ok) throw new Error('Erro ao restaurar banco SQLite');
     return res.json();
+  },
+
+  // Network Printer
+  async testPrinterNetwork(ip: string, port = 9100): Promise<{ success: boolean; message: string }> {
+    const res = await fetch(`${BASE_URL}/printer/test-network`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ip, port })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Falha ao testar conexão de rede com a impressora.');
+    return data;
   }
 };
 

@@ -43,6 +43,14 @@ export async function initDatabase(): Promise<Database> {
       receipt_footer TEXT,
       os_terms TEXT,
       printer_width TEXT DEFAULT '80mm',
+      printer_connection TEXT DEFAULT 'dialog',
+      printer_ip TEXT,
+      printer_port INTEGER DEFAULT 9100,
+      printer_baud_rate INTEGER DEFAULT 9600,
+      printer_cut_paper INTEGER DEFAULT 1,
+      printer_open_drawer INTEGER DEFAULT 0,
+      printer_codepage TEXT DEFAULT 'epson',
+      printer_model TEXT DEFAULT 'generic',
       pix_key TEXT,
       pix_key_type TEXT,
       pix_beneficiary TEXT,
@@ -169,6 +177,26 @@ export async function initDatabase(): Promise<Database> {
       created_at TEXT NOT NULL
     );
   `);
+
+  // Safe migrations for newly added store_settings columns
+  const newCols = [
+    { name: 'printer_connection', type: "TEXT DEFAULT 'dialog'" },
+    { name: 'printer_ip', type: 'TEXT' },
+    { name: 'printer_port', type: 'INTEGER DEFAULT 9100' },
+    { name: 'printer_baud_rate', type: 'INTEGER DEFAULT 9600' },
+    { name: 'printer_cut_paper', type: 'INTEGER DEFAULT 1' },
+    { name: 'printer_open_drawer', type: 'INTEGER DEFAULT 0' },
+    { name: 'printer_codepage', type: "TEXT DEFAULT 'epson'" },
+    { name: 'printer_model', type: "TEXT DEFAULT 'generic'" }
+  ];
+
+  for (const col of newCols) {
+    try {
+      db.run(`ALTER TABLE store_settings ADD COLUMN ${col.name} ${col.type}`);
+    } catch {
+      // Column already exists
+    }
+  }
 
   // Seed default store settings if none exist
   const existingSettings = db.exec("SELECT * FROM store_settings WHERE id = 'default'");

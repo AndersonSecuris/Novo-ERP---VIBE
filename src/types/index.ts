@@ -223,6 +223,14 @@ export interface StoreSettings {
   receipt_footer?: string;
   os_terms?: string;
   printer_width: '58mm' | '80mm';
+  printer_connection?: 'dialog' | 'webusb' | 'webserial' | 'webbluetooth' | 'network' | 'electron';
+  printer_ip?: string;
+  printer_port?: number;
+  printer_baud_rate?: number;
+  printer_cut_paper?: boolean;
+  printer_open_drawer?: boolean;
+  printer_codepage?: string;
+  printer_model?: string;
   pix_key?: string;
   pix_key_type?: string;
   pix_beneficiary?: string;

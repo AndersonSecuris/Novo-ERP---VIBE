@@ -321,33 +321,33 @@ export const ServiceOrderModal: React.FC<ServiceOrderModalProps> = ({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md overflow-y-auto">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-4xl w-full shadow-2xl overflow-hidden flex flex-col my-auto max-h-[92vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-md overflow-y-auto">
+      <div className="bg-white border border-slate-200 rounded-2xl max-w-4xl w-full shadow-2xl overflow-hidden flex flex-col my-auto max-h-[92vh]">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-900/90">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/70">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+            <div className="p-2.5 rounded-xl bg-blue-50 text-blue-600 border border-blue-100">
               <Smartphone className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-extrabold text-slate-100 text-lg">
+              <h3 className="font-extrabold text-slate-900 text-lg">
                 {isEditing ? `Editar Ordem de Serviço #${osToEdit.os_number}` : 'Nova Ordem de Serviço (Assistência Técnica)'}
               </h3>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-500">
                 Cadastro de aparelho, checklist, laudo, peças, fotos e orçamento
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex border-b border-slate-800 bg-slate-950/60 px-6 gap-2 pt-2 overflow-x-auto">
+        <div className="flex border-b border-slate-100 bg-slate-50/50 px-6 gap-2 pt-2 overflow-x-auto">
           {[
             { id: 'device', label: 'Cliente & Aparelho', icon: Smartphone },
             { id: 'checklist', label: 'Checklist de Entrada', icon: CheckSquare },
@@ -362,10 +362,10 @@ export const ServiceOrderModal: React.FC<ServiceOrderModalProps> = ({
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`pb-3 px-3.5 text-xs font-semibold border-b-2 whitespace-nowrap transition-all flex items-center gap-2 ${
+                className={`pb-3 px-3.5 text-xs font-semibold border-b-2 whitespace-nowrap transition-all flex items-center gap-2 cursor-pointer ${
                   isSelected
-                    ? 'border-indigo-500 text-indigo-400'
-                    : 'border-transparent text-slate-400 hover:text-slate-200'
+                    ? 'border-blue-600 text-blue-600 font-bold'
+                    : 'border-transparent text-slate-500 hover:text-slate-800'
                 }`}
               >
                 <Icon className="w-4 h-4" />
@@ -377,7 +377,7 @@ export const ServiceOrderModal: React.FC<ServiceOrderModalProps> = ({
 
         {/* Error Alert */}
         {errorMsg && (
-          <div className="mx-6 mt-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs flex items-center gap-2">
+          <div className="mx-6 mt-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 shrink-0" />
             <span>{errorMsg}</span>
           </div>
@@ -390,17 +390,17 @@ export const ServiceOrderModal: React.FC<ServiceOrderModalProps> = ({
             <div className="space-y-6">
               {/* Section 1: Client */}
               <div>
-                <h4 className="font-bold text-slate-200 text-sm flex items-center gap-2 mb-3">
-                  <User className="w-4 h-4 text-indigo-400" />
+                <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2 mb-3">
+                  <User className="w-4 h-4 text-blue-600" />
                   Dados do Cliente
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="sm:col-span-1">
-                    <label className="block text-slate-400 font-semibold mb-1">Selecionar Cliente</label>
+                    <label className="block text-slate-600 font-semibold mb-1">Selecionar Cliente</label>
                     <select
                       value={clientId}
                       onChange={e => handleClientSelect(e.target.value)}
-                      className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-slate-200 text-xs focus:outline-none focus:border-indigo-500"
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-800 text-xs focus:outline-none focus:border-blue-500"
                     >
                       <option value="">-- Cliente Avulso ou Novo --</option>
                       {clients.map(c => (
@@ -412,25 +412,25 @@ export const ServiceOrderModal: React.FC<ServiceOrderModalProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-slate-400 font-semibold mb-1">Nome do Cliente *</label>
+                    <label className="block text-slate-600 font-semibold mb-1">Nome do Cliente *</label>
                     <input
                       type="text"
                       required
                       value={clientName}
                       onChange={e => setClientName(e.target.value)}
-                      className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 focus:outline-none focus:border-indigo-500"
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:border-blue-500"
                       placeholder="Nome completo"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-slate-400 font-semibold mb-1">WhatsApp / Telefone *</label>
+                    <label className="block text-slate-600 font-semibold mb-1">WhatsApp / Telefone *</label>
                     <input
                       type="text"
                       required
                       value={clientPhone}
                       onChange={e => setClientPhone(e.target.value)}
-                      className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 focus:outline-none focus:border-indigo-500"
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:border-blue-500"
                       placeholder="(11) 98765-4321"
                     />
                   </div>
@@ -438,18 +438,18 @@ export const ServiceOrderModal: React.FC<ServiceOrderModalProps> = ({
               </div>
 
               {/* Section 2: Device identification */}
-              <div className="pt-4 border-t border-slate-800">
-                <h4 className="font-bold text-slate-200 text-sm flex items-center gap-2 mb-3">
-                  <Smartphone className="w-4 h-4 text-indigo-400" />
+              <div className="pt-4 border-t border-slate-200">
+                <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2 mb-3">
+                  <Smartphone className="w-4 h-4 text-blue-600" />
                   Identificação do Aparelho
                 </h4>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <div>
-                    <label className="block text-slate-400 font-semibold mb-1">Marca</label>
+                    <label className="block text-slate-600 font-semibold mb-1">Marca</label>
                     <select
                       value={deviceBrand}
                       onChange={e => setDeviceBrand(e.target.value)}
-                      className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-slate-200 text-xs focus:outline-none focus:border-indigo-500"
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-800 text-xs focus:outline-none focus:border-blue-500"
                     >
                       {COMMON_BRANDS.map(b => (
                         <option key={b} value={b}>
@@ -461,47 +461,47 @@ export const ServiceOrderModal: React.FC<ServiceOrderModalProps> = ({
 
                   {deviceBrand === 'Outra' && (
                     <div>
-                      <label className="block text-slate-400 font-semibold mb-1">Nome da Marca</label>
+                      <label className="block text-slate-600 font-semibold mb-1">Nome da Marca</label>
                       <input
                         type="text"
                         value={customBrand}
                         onChange={e => setCustomBrand(e.target.value)}
-                        className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 focus:outline-none focus:border-indigo-500"
+                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:border-blue-500"
                         placeholder="Ex: Huawei, Positivo"
                       />
                     </div>
                   )}
 
                   <div>
-                    <label className="block text-slate-400 font-semibold mb-1">Modelo do Aparelho *</label>
+                    <label className="block text-slate-600 font-semibold mb-1">Modelo do Aparelho *</label>
                     <input
                       type="text"
                       required
                       value={deviceModel}
                       onChange={e => setDeviceModel(e.target.value)}
-                      className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 focus:outline-none focus:border-indigo-500"
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:border-blue-500"
                       placeholder="Ex: iPhone 13 128GB, Moto G84"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-slate-400 font-semibold mb-1">Cor</label>
+                    <label className="block text-slate-600 font-semibold mb-1">Cor</label>
                     <input
                       type="text"
                       value={deviceColor}
                       onChange={e => setDeviceColor(e.target.value)}
-                      className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 focus:outline-none focus:border-indigo-500"
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:border-blue-500"
                       placeholder="Ex: Grafite, Azul, Preto"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-slate-400 font-semibold mb-1">IMEI (15 dígitos)</label>
+                    <label className="block text-slate-600 font-semibold mb-1">IMEI (15 dígitos)</label>
                     <input
                       type="text"
                       value={deviceImei}
                       onChange={e => setDeviceImei(e.target.value)}
-                      className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 font-mono focus:outline-none focus:border-indigo-500"
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-900 font-mono focus:outline-none focus:border-blue-500"
                       placeholder="Ex: 354892091823901"
                     />
                   </div>
@@ -509,21 +509,21 @@ export const ServiceOrderModal: React.FC<ServiceOrderModalProps> = ({
               </div>
 
               {/* Section 3: Security & Passwords */}
-              <div className="pt-4 border-t border-slate-800">
-                <h4 className="font-bold text-slate-200 text-sm flex items-center gap-2 mb-3">
-                  <Lock className="w-4 h-4 text-indigo-400" />
+              <div className="pt-4 border-t border-slate-200">
+                <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2 mb-3">
+                  <Lock className="w-4 h-4 text-blue-600" />
                   Segurança / Desbloqueio do Aparelho
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-slate-400 font-semibold mb-1">
+                    <label className="block text-slate-600 font-semibold mb-1">
                       Senha Alfanumérica / PIN Numérico
                     </label>
                     <input
                       type="text"
                       value={devicePassword}
                       onChange={e => setDevicePassword(e.target.value)}
-                      className="w-full px-3 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 font-mono text-sm focus:outline-none focus:border-indigo-500"
+                      className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-900 font-mono text-sm focus:outline-none focus:border-blue-500"
                       placeholder="Ex: 1234 ou senha@2024"
                     />
                     <p className="text-[11px] text-slate-500 mt-1">
@@ -541,8 +541,8 @@ export const ServiceOrderModal: React.FC<ServiceOrderModalProps> = ({
               </div>
 
               {/* Section 4: Accessories & Condition */}
-              <div className="pt-4 border-t border-slate-800">
-                <h4 className="font-bold text-slate-200 text-sm mb-2">Acessórios Deixados na Loja</h4>
+              <div className="pt-4 border-t border-slate-200">
+                <h4 className="font-bold text-slate-900 text-sm mb-2">Acessórios Deixados na Loja</h4>
                 <div className="flex flex-wrap gap-2 mb-4">
                   {ACCESSORIES_OPTIONS.map(acc => {
                     const isChecked = selectedAccessories.includes(acc);
@@ -551,10 +551,10 @@ export const ServiceOrderModal: React.FC<ServiceOrderModalProps> = ({
                         key={acc}
                         type="button"
                         onClick={() => toggleAccessory(acc)}
-                        className={`px-3 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                        className={`px-3 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
                           isChecked
-                            ? 'bg-indigo-600 border-indigo-500 text-white shadow-md'
-                            : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'
+                            ? 'bg-blue-600 border-blue-600 text-white shadow-xs'
+                            : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300'
                         }`}
                       >
                         {isChecked && <Check className="w-3.5 h-3.5" />}
@@ -566,7 +566,7 @@ export const ServiceOrderModal: React.FC<ServiceOrderModalProps> = ({
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-slate-400 font-semibold mb-1">
+                    <label className="block text-slate-600 font-semibold mb-1">
                       Estado Físico / Condição Visual de Entrada
                     </label>
                     <input
@@ -574,12 +574,12 @@ export const ServiceOrderModal: React.FC<ServiceOrderModalProps> = ({
                       value={deviceCondition}
                       onChange={e => setDeviceCondition(e.target.value)}
                       placeholder="Ex: Vidro trincado no canto superior, tampa traseira com arranhões leves"
-                      className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 focus:outline-none focus:border-indigo-500"
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:border-blue-500"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-slate-400 font-semibold mb-1">
+                    <label className="block text-slate-600 font-semibold mb-1">
                       Defeito Relatado pelo Cliente *
                     </label>
                     <input
@@ -588,7 +588,7 @@ export const ServiceOrderModal: React.FC<ServiceOrderModalProps> = ({
                       value={reportedDefect}
                       onChange={e => setReportedDefect(e.target.value)}
                       placeholder="Ex: Não liga após queda, touch falhando no centro"
-                      className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 focus:outline-none focus:border-indigo-500"
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:border-blue-500"
                     />
                   </div>
                 </div>
@@ -599,7 +599,7 @@ export const ServiceOrderModal: React.FC<ServiceOrderModalProps> = ({
           {/* TAB 2: CHECKLIST */}
           {activeTab === 'checklist' && (
             <div className="space-y-4">
-              <div className="p-3.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-200">
+              <div className="p-3.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-900">
                 <span className="font-bold">Checklist de Entrada e Inspeção:</span> Marque os componentes funcionais no momento do recebimento. Itens desmarcados indicam avaria prévia do cliente.
               </div>
 
@@ -613,14 +613,14 @@ export const ServiceOrderModal: React.FC<ServiceOrderModalProps> = ({
                       onClick={() => toggleChecklistIn(item.key)}
                       className={`p-3 rounded-xl border flex items-center justify-between transition-all cursor-pointer ${
                         isOk
-                          ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
-                          : 'bg-rose-500/10 border-rose-500/30 text-rose-300'
+                          ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                          : 'bg-rose-50 border-rose-200 text-rose-800'
                       }`}
                     >
                       <span className="font-semibold">{item.label}</span>
                       <span
-                        className={`px-2 py-0.5 rounded text-[10px] font-extrabold uppercase ${
-                          isOk ? 'bg-emerald-500/20 text-emerald-300' : 'bg-rose-500/20 text-rose-300'
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
+                          isOk ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
                         }`}
                       >
                         {isOk ? 'OK / Funciona' : 'Defeito / N/A'}
@@ -631,7 +631,7 @@ export const ServiceOrderModal: React.FC<ServiceOrderModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-slate-400 font-semibold mb-1">
+                <label className="block text-slate-600 font-semibold mb-1">
                   Observações Adicionais do Checklist
                 </label>
                 <textarea
@@ -639,7 +639,7 @@ export const ServiceOrderModal: React.FC<ServiceOrderModalProps> = ({
                   value={checklistIn.notes || ''}
                   onChange={e => setChecklistIn(prev => ({ ...prev, notes: e.target.value }))}
                   placeholder="Ex: Sensor de proximidade apaga mas biometria não cadastra nova digital..."
-                  className="w-full p-3 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 focus:outline-none focus:border-indigo-500"
+                  className="w-full p-3 bg-white border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:border-blue-500"
                 />
               </div>
             </div>
@@ -648,19 +648,19 @@ export const ServiceOrderModal: React.FC<ServiceOrderModalProps> = ({
           {/* TAB 3: PHOTOS */}
           {activeTab === 'photos' && (
             <div className="space-y-4">
-              <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
-                <div className="flex items-center gap-2 font-bold text-slate-200">
-                  <Camera className="w-4 h-4 text-indigo-400" />
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+                <div className="flex items-center gap-2 font-bold text-slate-900">
+                  <Camera className="w-4 h-4 text-blue-600" />
                   Adicionar Foto ao Laudo da OS
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
-                    <label className="block text-slate-400 font-semibold mb-1">Tipo de Foto</label>
+                    <label className="block text-slate-600 font-semibold mb-1">Tipo de Foto</label>
                     <select
                       value={newPhotoType}
                       onChange={e => setNewPhotoType(e.target.value as any)}
-                      className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-slate-200 text-xs focus:outline-none focus:border-indigo-500"
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-800 text-xs focus:outline-none focus:border-blue-500"
                     >
                       <option value="entry">Foto de Entrada (Estado Inicial)</option>
                       <option value="repair">Durante Reparo (Bancada/Placa)</option>
@@ -669,19 +669,19 @@ export const ServiceOrderModal: React.FC<ServiceOrderModalProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-slate-400 font-semibold mb-1">Legenda / Descrição</label>
+                    <label className="block text-slate-600 font-semibold mb-1">Legenda / Descrição</label>
                     <input
                       type="text"
                       value={newPhotoCaption}
                       onChange={e => setNewPhotoCaption(e.target.value)}
                       placeholder="Ex: Trinca frontal, oxidação conector"
-                      className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-slate-100 focus:outline-none focus:border-indigo-500"
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:border-blue-500"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-slate-400 font-semibold mb-1">Selecionar Imagem</label>
-                    <label className="w-full px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold flex items-center justify-center gap-2 cursor-pointer transition-colors">
+                    <label className="block text-slate-600 font-semibold mb-1">Selecionar Imagem</label>
+                    <label className="w-full px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold flex items-center justify-center gap-2 cursor-pointer transition-colors shadow-xs">
                       <Upload className="w-4 h-4" />
                       Enviar Foto / Câmera
                       <input
@@ -698,8 +698,8 @@ export const ServiceOrderModal: React.FC<ServiceOrderModalProps> = ({
 
               {/* Photo Gallery Grid */}
               {photos.length === 0 ? (
-                <div className="py-12 text-center text-slate-500">
-                  <Camera className="w-12 h-12 stroke-1 mx-auto mb-2 text-slate-700" />
+                <div className="py-12 text-center text-slate-400">
+                  <Camera className="w-12 h-12 stroke-1 mx-auto mb-2 text-slate-300" />
                   Nenhuma foto anexada a esta ordem de serviço.
                 </div>
               ) : (
@@ -707,9 +707,9 @@ export const ServiceOrderModal: React.FC<ServiceOrderModalProps> = ({
                   {photos.map(photo => (
                     <div
                       key={photo.id}
-                      className="relative group rounded-xl overflow-hidden border border-slate-800 bg-slate-950 flex flex-col"
+                      className="relative group rounded-xl overflow-hidden border border-slate-200 bg-white flex flex-col shadow-xs"
                     >
-                      <div className="relative aspect-video bg-black overflow-hidden">
+                      <div className="relative aspect-video bg-slate-100 overflow-hidden">
                         <img
                           src={photo.url}
                           alt={photo.caption || 'Foto da OS'}
@@ -718,7 +718,7 @@ export const ServiceOrderModal: React.FC<ServiceOrderModalProps> = ({
                         <button
                           type="button"
                           onClick={() => setViewingPhoto(photo.url)}
-                          className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity"
+                          className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity cursor-pointer"
                         >
                           <Eye className="w-6 h-6" />
                         </button>
@@ -726,15 +726,15 @@ export const ServiceOrderModal: React.FC<ServiceOrderModalProps> = ({
 
                       <div className="p-2 flex-1 flex flex-col justify-between">
                         <div>
-                          <span className="text-[9px] uppercase font-bold text-indigo-400 block">
+                          <span className="text-[9px] uppercase font-bold text-blue-600 block">
                             {photo.type === 'entry' ? 'Entrada' : photo.type === 'repair' ? 'Reparo' : 'Saída'}
                           </span>
-                          <p className="text-[11px] text-slate-200 truncate">{photo.caption}</p>
+                          <p className="text-[11px] text-slate-700 truncate">{photo.caption}</p>
                         </div>
                         <button
                           type="button"
                           onClick={() => handleRemovePhoto(photo.id)}
-                          className="text-[10px] text-rose-400 hover:text-rose-300 flex items-center gap-1 mt-1"
+                          className="text-[10px] text-rose-600 hover:text-rose-700 flex items-center gap-1 mt-1 cursor-pointer"
                         >
                           <Trash2 className="w-3 h-3" />
                           Remover
@@ -753,7 +753,7 @@ export const ServiceOrderModal: React.FC<ServiceOrderModalProps> = ({
               {/* Technical Diagnosis Text */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-slate-400 font-semibold mb-1">
+                  <label className="block text-slate-600 font-semibold mb-1">
                     Laudo Técnico / Diagnóstico
                   </label>
                   <textarea
@@ -761,12 +761,12 @@ export const ServiceOrderModal: React.FC<ServiceOrderModalProps> = ({
                     value={technicalDiagnosis}
                     onChange={e => setTechnicalDiagnosis(e.target.value)}
                     placeholder="Ex: Tela danificada por impacto físico, placa principal intacta..."
-                    className="w-full p-2.5 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 focus:outline-none focus:border-indigo-500"
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:border-blue-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 font-semibold mb-1">
+                  <label className="block text-slate-600 font-semibold mb-1">
                     Solução Técnica / Procedimento Executado
                   </label>
                   <textarea
@@ -774,23 +774,23 @@ export const ServiceOrderModal: React.FC<ServiceOrderModalProps> = ({
                     value={technicalSolution}
                     onChange={e => setTechnicalSolution(e.target.value)}
                     placeholder="Ex: Troca de display frontal + limpeza química do conector"
-                    className="w-full p-2.5 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 focus:outline-none focus:border-indigo-500"
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:border-blue-500"
                   />
                 </div>
               </div>
 
               {/* Parts Selection from Inventory */}
-              <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
-                <h5 className="font-bold text-slate-200 flex items-center justify-between">
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+                <h5 className="font-bold text-slate-900 flex items-center justify-between">
                   <span>Peças Utilizadas (Baixa Automática no Estoque)</span>
-                  <span className="text-emerald-400 font-mono">{formatCurrency(partsCost)}</span>
+                  <span className="text-emerald-600 font-mono">{formatCurrency(partsCost)}</span>
                 </h5>
 
                 <div className="flex gap-2">
                   <select
                     value={selectedPartId}
                     onChange={e => setSelectedPartId(e.target.value)}
-                    className="flex-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-slate-200 text-xs focus:outline-none focus:border-indigo-500"
+                    className="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-800 text-xs focus:outline-none focus:border-blue-500"
                   >
                     <option value="">-- Selecione uma peça do estoque --</option>
                     {products
@@ -804,7 +804,7 @@ export const ServiceOrderModal: React.FC<ServiceOrderModalProps> = ({
                   <button
                     type="button"
                     onClick={handleAddPart}
-                    className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold flex items-center gap-1.5"
+                    className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold flex items-center gap-1.5 cursor-pointer shadow-xs"
                   >
                     <Plus className="w-4 h-4" />
                     Adicionar Peça
@@ -816,22 +816,22 @@ export const ServiceOrderModal: React.FC<ServiceOrderModalProps> = ({
                     {partsUsed.map((part, idx) => (
                       <div
                         key={idx}
-                        className="flex items-center justify-between p-2.5 rounded-lg bg-slate-900 border border-slate-800"
+                        className="flex items-center justify-between p-2.5 rounded-lg bg-white border border-slate-200"
                       >
                         <div>
-                          <div className="font-semibold text-slate-200">{part.name}</div>
-                          <div className="text-[11px] text-slate-400">
+                          <div className="font-semibold text-slate-800">{part.name}</div>
+                          <div className="text-[11px] text-slate-500">
                             {part.quantity}x a {formatCurrency(part.unitPrice)}
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
-                          <span className="font-bold text-emerald-400 font-mono">
+                          <span className="font-bold text-emerald-600 font-mono">
                             {formatCurrency(part.unitPrice * part.quantity)}
                           </span>
                           <button
                             type="button"
                             onClick={() => handleRemovePart(idx)}
-                            className="text-rose-400 hover:text-rose-300 p-1"
+                            className="text-rose-600 hover:text-rose-700 p-1 cursor-pointer"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -843,10 +843,10 @@ export const ServiceOrderModal: React.FC<ServiceOrderModalProps> = ({
               </div>
 
               {/* Services / Labor */}
-              <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
-                <h5 className="font-bold text-slate-200 flex items-center justify-between">
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+                <h5 className="font-bold text-slate-900 flex items-center justify-between">
                   <span>Mão de Obra / Serviços Executados</span>
-                  <span className="text-purple-400 font-mono">{formatCurrency(servicesCost)}</span>
+                  <span className="text-purple-600 font-mono">{formatCurrency(servicesCost)}</span>
                 </h5>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -855,7 +855,7 @@ export const ServiceOrderModal: React.FC<ServiceOrderModalProps> = ({
                     value={customServiceName}
                     onChange={e => setCustomServiceName(e.target.value)}
                     placeholder="Descrição do serviço (ex: Mão de obra troca de tela)"
-                    className="sm:col-span-2 px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-slate-100 focus:outline-none focus:border-indigo-500"
+                    className="sm:col-span-2 px-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:border-blue-500"
                   />
                   <div className="flex gap-2">
                     <input
@@ -864,12 +864,12 @@ export const ServiceOrderModal: React.FC<ServiceOrderModalProps> = ({
                       value={customServicePrice}
                       onChange={e => setCustomServicePrice(e.target.value)}
                       placeholder="Valor R$"
-                      className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-slate-100 font-mono focus:outline-none focus:border-indigo-500"
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-900 font-mono focus:outline-none focus:border-blue-500"
                     />
                     <button
                       type="button"
                       onClick={handleAddService}
-                      className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold shrink-0"
+                      className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold shrink-0 cursor-pointer shadow-xs"
                     >
                       <Plus className="w-4 h-4" />
                     </button>
@@ -881,17 +881,17 @@ export const ServiceOrderModal: React.FC<ServiceOrderModalProps> = ({
                     {servicesDone.map((srv, idx) => (
                       <div
                         key={idx}
-                        className="flex items-center justify-between p-2.5 rounded-lg bg-slate-900 border border-slate-800"
+                        className="flex items-center justify-between p-2.5 rounded-lg bg-white border border-slate-200"
                       >
-                        <span className="font-semibold text-slate-200">{srv.name}</span>
+                        <span className="font-semibold text-slate-800">{srv.name}</span>
                         <div className="flex items-center gap-3">
-                          <span className="font-bold text-purple-400 font-mono">
+                          <span className="font-bold text-purple-600 font-mono">
                             {formatCurrency(srv.price)}
                           </span>
                           <button
                             type="button"
                             onClick={() => handleRemoveService(idx)}
-                            className="text-rose-400 hover:text-rose-300 p-1"
+                            className="text-rose-600 hover:text-rose-700 p-1 cursor-pointer"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -909,11 +909,11 @@ export const ServiceOrderModal: React.FC<ServiceOrderModalProps> = ({
             <div className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-slate-400 font-semibold mb-1">Status da OS</label>
+                  <label className="block text-slate-600 font-semibold mb-1">Status da OS</label>
                   <select
                     value={status}
                     onChange={e => setStatus(e.target.value as any)}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-slate-200 text-xs focus:outline-none focus:border-indigo-500 font-bold"
+                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-900 text-xs focus:outline-none focus:border-blue-500 font-bold"
                   >
                     <option value="aguardando_analise">Aguardando Análise</option>
                     <option value="em_analise">Em Análise / Orçamento</option>
@@ -927,11 +927,11 @@ export const ServiceOrderModal: React.FC<ServiceOrderModalProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 font-semibold mb-1">Prioridade</label>
+                  <label className="block text-slate-600 font-semibold mb-1">Prioridade</label>
                   <select
                     value={priority}
                     onChange={e => setPriority(e.target.value as any)}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-slate-200 text-xs focus:outline-none focus:border-indigo-500"
+                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-800 text-xs focus:outline-none focus:border-blue-500"
                   >
                     <option value="baixa">Baixa</option>
                     <option value="normal">Normal</option>
@@ -941,31 +941,31 @@ export const ServiceOrderModal: React.FC<ServiceOrderModalProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 font-semibold mb-1">Técnico Responsável</label>
+                  <label className="block text-slate-600 font-semibold mb-1">Técnico Responsável</label>
                   <input
                     type="text"
                     value={technicianName}
                     onChange={e => setTechnicianName(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 focus:outline-none focus:border-indigo-500"
+                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:border-blue-500"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-400 font-semibold mb-1">
+                  <label className="block text-slate-600 font-semibold mb-1">
                     Previsão de Conclusão / Entrega
                   </label>
                   <input
                     type="date"
                     value={estimatedDelivery}
                     onChange={e => setEstimatedDelivery(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 focus:outline-none focus:border-indigo-500"
+                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:border-blue-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 font-semibold mb-1">Desconto Aplicado (R$)</label>
+                  <label className="block text-slate-600 font-semibold mb-1">Desconto Aplicado (R$)</label>
                   <input
                     type="number"
                     step="0.01"
@@ -973,41 +973,41 @@ export const ServiceOrderModal: React.FC<ServiceOrderModalProps> = ({
                     value={discount || ''}
                     onChange={e => setDiscount(parseFloat(e.target.value) || 0)}
                     placeholder="0,00"
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 font-mono focus:outline-none focus:border-indigo-500"
+                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-900 font-mono focus:outline-none focus:border-blue-500"
                   />
                 </div>
               </div>
 
               {/* Financial Box */}
-              <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
-                <div className="flex justify-between text-slate-400">
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                <div className="flex justify-between text-slate-600">
                   <span>Subtotal Peças:</span>
                   <span className="font-mono">{formatCurrency(partsCost)}</span>
                 </div>
-                <div className="flex justify-between text-slate-400">
+                <div className="flex justify-between text-slate-600">
                   <span>Subtotal Serviços / Mão de Obra:</span>
                   <span className="font-mono">{formatCurrency(servicesCost)}</span>
                 </div>
                 {discount > 0 && (
-                  <div className="flex justify-between text-rose-400 font-semibold">
+                  <div className="flex justify-between text-rose-600 font-semibold">
                     <span>Desconto:</span>
                     <span className="font-mono">-{formatCurrency(discount)}</span>
                   </div>
                 )}
-                <div className="flex justify-between text-base font-extrabold text-white pt-2 border-t border-slate-800">
+                <div className="flex justify-between text-base font-extrabold text-slate-900 pt-2 border-t border-slate-200">
                   <span>VALOR TOTAL DO ORÇAMENTO:</span>
-                  <span className="text-emerald-400 font-mono text-xl">{formatCurrency(total)}</span>
+                  <span className="text-emerald-600 font-mono text-xl">{formatCurrency(total)}</span>
                 </div>
               </div>
             </div>
           )}
 
           {/* Footer Actions */}
-          <div className="flex items-center justify-between pt-4 border-t border-slate-800">
+          <div className="flex items-center justify-between pt-4 border-t border-slate-100">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold"
+              className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold cursor-pointer"
             >
               Cancelar
             </button>
@@ -1015,7 +1015,7 @@ export const ServiceOrderModal: React.FC<ServiceOrderModalProps> = ({
             <button
               type="submit"
               disabled={submitting}
-              className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-2 shadow-lg shadow-emerald-600/30 transition-all cursor-pointer"
+              className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-2 shadow-xs transition-all cursor-pointer"
             >
               <Check className="w-4 h-4" />
               {submitting ? 'Salvando...' : isEditing ? 'Salvar Alterações da OS' : 'Criar Ordem de Serviço'}
