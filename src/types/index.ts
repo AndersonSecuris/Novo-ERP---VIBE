@@ -227,6 +227,7 @@ export interface StoreSettings {
   printer_ip?: string;
   printer_port?: number;
   printer_baud_rate?: number;
+  printer_serial_port?: string;
   printer_cut_paper?: boolean;
   printer_open_drawer?: boolean;
   printer_codepage?: string;

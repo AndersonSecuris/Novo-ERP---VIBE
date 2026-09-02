@@ -31,6 +31,7 @@ import {
   printEscPosUniversal,
   downloadRawEscPosFile
 } from '../../services/escpos';
+import { SerialPortPicker } from '../common/SerialPortPicker';
 
 interface SettingsViewProps {
   settings: StoreSettings;
@@ -358,18 +359,14 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
                 {/* Conditional Serial Fields */}
                 {formData.printer_connection === 'webserial' && (
-                  <div>
-                    <label className="block text-slate-700 font-semibold mb-1">Velocidade da Porta Serial (Baud Rate)</label>
-                    <select
-                      value={formData.printer_baud_rate || 9600}
-                      onChange={e => setFormData({ ...formData, printer_baud_rate: Number(e.target.value) })}
-                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-                    >
-                      <option value={9600}>9600 bps (Padrão maioria)</option>
-                      <option value={19200}>19200 bps</option>
-                      <option value={38400}>38400 bps</option>
-                      <option value={115200}>115200 bps (Alta velocidade)</option>
-                    </select>
+                  <div className="col-span-1 sm:col-span-2">
+                    <SerialPortPicker
+                      variant="full"
+                      selectedPortName={formData.printer_serial_port || 'COM1'}
+                      baudRate={formData.printer_baud_rate || 9600}
+                      onPortNameChange={(name) => setFormData({ ...formData, printer_serial_port: name })}
+                      onBaudRateChange={(rate) => setFormData({ ...formData, printer_baud_rate: rate })}
+                    />
                   </div>
                 )}
 

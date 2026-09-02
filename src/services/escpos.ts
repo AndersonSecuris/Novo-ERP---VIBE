@@ -480,16 +480,120 @@ export async function printViaWebUsb(buffer: Uint8Array): Promise<{ success: boo
 }
 
 /**
+ * Web Serial (COM) Device and Port Selection Helpers
+ */
+export interface SerialPortInfo {
+  port: any;
+  index: number;
+  label: string;
+  usbVendorId?: number;
+  usbProductId?: number;
+}
+
+export function isWebSerialSupported(): boolean {
+  return typeof navigator !== 'undefined' && 'serial' in navigator;
+}
+
+export function formatSerialPortLabel(port: any, index?: number): string {
+  if (!port) return 'Nenhuma porta selecionada';
+  try {
+    const info = typeof port.getInfo === 'function' ? port.getInfo() : {};
+    const vid = info.usbVendorId ? `VID: 0x${info.usbVendorId.toString(16).toUpperCase().padStart(4, '0')}` : '';
+    const pid = info.usbProductId ? `PID: 0x${info.usbProductId.toString(16).toUpperCase().padStart(4, '0')}` : '';
+    const details = [vid, pid].filter(Boolean).join(' ');
+    if (details) {
+      return index !== undefined ? `Porta #${index + 1} (${details})` : `Dispositivo Serial (${details})`;
+    }
+    return index !== undefined ? `Porta Serial #${index + 1}` : 'Porta Serial Padrão';
+  } catch {
+    return index !== undefined ? `Porta Serial #${index + 1}` : 'Porta Serial Conectada';
+  }
+}
+
+export async function getAuthorizedSerialPorts(): Promise<SerialPortInfo[]> {
+  if (!isWebSerialSupported()) return [];
+  try {
+    const ports: any[] = await (navigator as any).serial.getPorts();
+    return ports.map((port, index) => ({
+      port,
+      index,
+      label: formatSerialPortLabel(port, index),
+      usbVendorId: port.getInfo?.().usbVendorId,
+      usbProductId: port.getInfo?.().usbProductId
+    }));
+  } catch (err) {
+    console.warn('Erro ao obter portas seriais autorizadas:', err);
+    return [];
+  }
+}
+
+export async function requestSerialPort(): Promise<SerialPortInfo | null> {
+  if (!isWebSerialSupported()) {
+    throw new Error('Navegador sem suporte a Web Serial (Recomendado: Google Chrome, Microsoft Edge ou Opera).');
+  }
+  try {
+    const port = await (navigator as any).serial.requestPort();
+    if (!port) return null;
+    activeSerialPort = port;
+    const label = formatSerialPortLabel(port);
+    return {
+      port,
+      index: 0,
+      label,
+      usbVendorId: port.getInfo?.().usbVendorId,
+      usbProductId: port.getInfo?.().usbProductId
+    };
+  } catch (err: any) {
+    if (err.name === 'NotFoundError' || err.message?.includes('No port selected')) {
+      return null;
+    }
+    throw err;
+  }
+}
+
+export function getActiveSerialPort(): any {
+  return activeSerialPort;
+}
+
+export function setActiveSerialPort(port: any): void {
+  activeSerialPort = port;
+}
+
+export function clearActiveSerialPort(): void {
+  activeSerialPort = null;
+}
+
+export function getActiveSerialPortLabel(): string | null {
+  if (!activeSerialPort) return null;
+  return formatSerialPortLabel(activeSerialPort);
+}
+
+/**
  * Prints buffer directly via Web Serial (COM Port)
  */
-export async function printViaWebSerial(buffer: Uint8Array, baudRate = 9600): Promise<{ success: boolean; error?: string }> {
-  if (!('serial' in navigator)) {
+export async function printViaWebSerial(
+  buffer: Uint8Array,
+  baudRate = 9600,
+  targetPort?: any
+): Promise<{ success: boolean; portName?: string; error?: string }> {
+  if (!isWebSerialSupported()) {
     throw new Error('Navegador sem suporte a Web Serial (Recomendado: Google Chrome, Microsoft Edge ou Opera)');
   }
 
   try {
-    let port = activeSerialPort;
-    if (!port || !port.readable) {
+    let port = targetPort || activeSerialPort;
+
+    // Check if browser already has authorized ports and none is selected yet
+    if (!port) {
+      const authorized = await (navigator as any).serial.getPorts().catch(() => []);
+      if (authorized && authorized.length > 0) {
+        port = authorized[0];
+        activeSerialPort = port;
+      }
+    }
+
+    // If still no port, prompt user to pick from OS serial ports
+    if (!port) {
       port = await (navigator as any).serial.requestPort();
       activeSerialPort = port;
     }
@@ -498,13 +602,31 @@ export async function printViaWebSerial(buffer: Uint8Array, baudRate = 9600): Pr
       return { success: false, error: 'Nenhuma porta Serial / COM selecionada.' };
     }
 
-    await port.open({ baudRate: Number(baudRate) || 9600 });
-    const writer = port.writable.getWriter();
-    await writer.write(buffer);
-    writer.releaseLock();
-    await port.close();
+    const portName = formatSerialPortLabel(port);
 
-    return { success: true };
+    let shouldClose = false;
+    if (!port.readable) {
+      await port.open({
+        baudRate: Number(baudRate) || 9600,
+        dataBits: 8,
+        stopBits: 1,
+        parity: 'none',
+        flowControl: 'none'
+      });
+      shouldClose = true;
+    }
+
+    const writer = port.writable.getWriter();
+    try {
+      await writer.write(buffer);
+    } finally {
+      writer.releaseLock();
+      if (shouldClose) {
+        await port.close();
+      }
+    }
+
+    return { success: true, portName };
   } catch (err: any) {
     console.error('WebSerial error:', err);
     return { success: false, error: err.message || 'Erro de comunicação Serial / COM.' };
@@ -611,7 +733,8 @@ export async function printViaNetwork(buffer: Uint8Array, ip: string, port = 910
 export async function printEscPosUniversal(
   buffer: Uint8Array,
   settings: StoreSettings,
-  preferredType?: 'webusb' | 'webserial' | 'webbluetooth' | 'network' | 'electron' | 'dialog'
+  preferredType?: 'webusb' | 'webserial' | 'webbluetooth' | 'network' | 'electron' | 'dialog',
+  options?: { serialPort?: any }
 ): Promise<{ success: boolean; mode: string; message: string; deviceName?: string }> {
   const type = preferredType || settings.printer_connection || 'dialog';
 
@@ -646,12 +769,14 @@ export async function printEscPosUniversal(
 
   // 3. Web Serial (COM)
   if (type === 'webserial') {
-    const res = await printViaWebSerial(buffer, settings.printer_baud_rate || 9600);
+    const res = await printViaWebSerial(buffer, settings.printer_baud_rate || 9600, options?.serialPort);
     if (res.success) {
+      const portDesc = res.portName || settings.printer_serial_port || 'COM';
       return {
         success: true,
         mode: 'webserial',
-        message: 'Impresso com sucesso via Porta Serial (COM).'
+        deviceName: portDesc,
+        message: `Impresso com sucesso via Porta Serial (${portDesc}) a ${settings.printer_baud_rate || 9600} bps.`
       };
     }
     throw new Error(res.error || 'Falha ao imprimir via Porta Serial.');

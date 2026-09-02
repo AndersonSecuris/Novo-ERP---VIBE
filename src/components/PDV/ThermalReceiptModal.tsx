@@ -21,6 +21,7 @@ import {
   printEscPosUniversal,
   downloadRawEscPosFile
 } from '../../services/escpos';
+import { SerialPortPicker } from '../common/SerialPortPicker';
 
 interface ThermalReceiptModalProps {
   sale: Sale;
@@ -39,6 +40,9 @@ export const ThermalReceiptModal: React.FC<ThermalReceiptModalProps> = ({
   const [selectedConnection, setSelectedConnection] = useState<string>(
     settings.printer_connection || 'dialog'
   );
+  const [serialPort, setSerialPort] = useState<string>(settings.printer_serial_port || 'COM1');
+  const [serialBaudRate, setSerialBaudRate] = useState<number>(settings.printer_baud_rate || 9600);
+  const [selectedSerialObj, setSelectedSerialObj] = useState<any>(null);
   
   const receiptRef = useRef<HTMLDivElement>(null);
   const widthClass = settings.printer_width === '58mm' ? 'max-w-[250px]' : 'max-w-[340px]';
@@ -48,9 +52,16 @@ export const ThermalReceiptModal: React.FC<ThermalReceiptModalProps> = ({
     setStatusMessage(null);
     try {
       const conn = targetType || selectedConnection;
-      const buffer = encodeSaleReceipt(sale, settings);
+      const activeSettings: StoreSettings = {
+        ...settings,
+        printer_serial_port: serialPort,
+        printer_baud_rate: serialBaudRate
+      };
+      const buffer = encodeSaleReceipt(sale, activeSettings);
       
-      const result = await printEscPosUniversal(buffer, settings, conn as any);
+      const result = await printEscPosUniversal(buffer, activeSettings, conn as any, {
+        serialPort: selectedSerialObj
+      });
       setStatusMessage({
         type: 'success',
         text: result.message || 'Cupom ESC/POS processado com sucesso!'
@@ -215,6 +226,20 @@ export const ThermalReceiptModal: React.FC<ThermalReceiptModalProps> = ({
             {selectedConnection === 'dialog' && <span className="flex items-center gap-1 text-slate-600"><Monitor className="w-3.5 h-3.5" /> Spooler Navegador</span>}
           </div>
         </div>
+
+        {/* Serial Port Selector Strip */}
+        {selectedConnection === 'webserial' && (
+          <div className="px-6 py-2.5 bg-purple-50/40 border-b border-purple-100">
+            <SerialPortPicker
+              variant="compact"
+              selectedPortName={serialPort}
+              baudRate={serialBaudRate}
+              onPortNameChange={setSerialPort}
+              onBaudRateChange={setSerialBaudRate}
+              onPortSelected={(p) => setSelectedSerialObj(p)}
+            />
+          </div>
+        )}
 
         {/* Status Toast Notification */}
         {statusMessage && (

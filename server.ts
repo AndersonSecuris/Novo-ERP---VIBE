@@ -57,7 +57,7 @@ async function startServer() {
         `UPDATE store_settings SET
           name = ?, cnpj = ?, phone = ?, whatsapp = ?, address = ?, city_state = ?,
           receipt_footer = ?, os_terms = ?, printer_width = ?,
-          printer_connection = ?, printer_ip = ?, printer_port = ?, printer_baud_rate = ?,
+          printer_connection = ?, printer_ip = ?, printer_port = ?, printer_baud_rate = ?, printer_serial_port = ?,
           printer_cut_paper = ?, printer_open_drawer = ?, printer_codepage = ?, printer_model = ?,
           pix_key = ?, pix_key_type = ?, pix_beneficiary = ?, whatsapp_templates = ?
         WHERE id = 'default'`,
@@ -65,7 +65,8 @@ async function startServer() {
           s.name, s.cnpj, s.phone, s.whatsapp, s.address, s.city_state,
           s.receipt_footer, s.os_terms, s.printer_width || '80mm',
           s.printer_connection || 'dialog', s.printer_ip || null, Number(s.printer_port || 9100),
-          Number(s.printer_baud_rate || 9600), s.printer_cut_paper ? 1 : 0, s.printer_open_drawer ? 1 : 0,
+          Number(s.printer_baud_rate || 9600), s.printer_serial_port || 'COM1',
+          s.printer_cut_paper ? 1 : 0, s.printer_open_drawer ? 1 : 0,
           s.printer_codepage || 'epson', s.printer_model || 'generic',
           s.pix_key, s.pix_key_type, s.pix_beneficiary, templatesStr
         ]

@@ -184,6 +184,7 @@ export async function initDatabase(): Promise<Database> {
     { name: 'printer_ip', type: 'TEXT' },
     { name: 'printer_port', type: 'INTEGER DEFAULT 9100' },
     { name: 'printer_baud_rate', type: 'INTEGER DEFAULT 9600' },
+    { name: 'printer_serial_port', type: "TEXT DEFAULT 'COM1'" },
     { name: 'printer_cut_paper', type: 'INTEGER DEFAULT 1' },
     { name: 'printer_open_drawer', type: 'INTEGER DEFAULT 0' },
     { name: 'printer_codepage', type: "TEXT DEFAULT 'epson'" },
